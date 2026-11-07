@@ -1,0 +1,6 @@
+# syntax=docker/dockerfile:1.7
+FROM vexaai/v012-meeting-api:v0.12.28
+COPY core/meetings/services/meeting-api/src/meeting_api/bot_spawn/invocation.py /app/src/meeting_api/bot_spawn/invocation.py
+COPY core/meetings/services/meeting-api/src/meeting_api/bot_spawn/router.py /app/src/meeting_api/bot_spawn/router.py
+COPY core/meetings/services/meeting-api/src/meeting_api/bot_spawn/service.py /app/src/meeting_api/bot_spawn/service.py
+COPY core/meetings/contracts/invocation.v1/invocation.schema.json /app/meetings/contracts/invocation.v1/invocation.schema.json

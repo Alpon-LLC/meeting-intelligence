@@ -1,0 +1,1416 @@
+diff --git a/architecture.calm.json b/architecture.calm.json
+index 08cbf0e7..1ed6fca4 100644
+--- a/architecture.calm.json
++++ b/architecture.calm.json
+@@ -604,7 +604,7 @@
+    "unique-id": "invocation.v1",
+    "node-type": "contract",
+    "name": "invocation.v1",
+-   "description": "invocation.v1 — sealed/published contract (meetings)",
++    "description": "invocation.v1 — sealed/published meeting bot contract, including optional provider-neutral transcription keyterms carried from meeting-api to bot STT egress",
+    "metadata": [
+     {
+      "path": "core/meetings/contracts/invocation.v1",
+diff --git a/architecture.seal.json b/architecture.seal.json
+index 295fe515..a1121ded 100644
+--- a/architecture.seal.json
++++ b/architecture.seal.json
+@@ -1,3 +1,3 @@
+ {
+-  "architecture.calm.json": "0dddfbe7e057e8e86dc52296e55740907579efc5ebcc50e48bd1e106efee2ef9"
++  "architecture.calm.json": "836898c2c631ec38bfa6a5a6dce763254b8bed09e5904a260b5f13561ed42553"
+ }
+diff --git a/core/meetings/contracts/invocation.v1/golden/Invocation.full.json b/core/meetings/contracts/invocation.v1/golden/Invocation.full.json
+index 7d1ccc39..555bdfec 100644
+--- a/core/meetings/contracts/invocation.v1/golden/Invocation.full.json
++++ b/core/meetings/contracts/invocation.v1/golden/Invocation.full.json
+@@ -15,6 +15,7 @@
+   "transcriptionServiceUrl": "http://transcription:8083",
+   "transcriptionServiceToken": "STT_TOKEN_PLACEHOLDER",
+   "transcriptionModel": "whisper-large-v3-turbo",
++  "transcriptionKeyterms": ["MeetingLab", "Hermes", "Alex Example"],
+   "recordingEnabled": true,
+   "captureModes": ["audio", "video"],
+   "captureSignalEnabled": true,
+diff --git a/core/meetings/contracts/invocation.v1/invocation.schema.json b/core/meetings/contracts/invocation.v1/invocation.schema.json
+index 1a19b5bd..d26f44d2 100644
+--- a/core/meetings/contracts/invocation.v1/invocation.schema.json
++++ b/core/meetings/contracts/invocation.v1/invocation.schema.json
+@@ -39,6 +39,12 @@
+         "transcriptionServiceUrl": { "type": "string", "description": "stt endpoint" },
+         "transcriptionServiceToken": { "type": "string", "description": "SECRET; placeholder in goldens" },
+         "transcriptionModel": { "type": ["string", "null"], "description": "stt model id sent as the OpenAI-compatible `model` form part; unset → whisper-1" },
++        "transcriptionKeyterms": {
++          "type": "array",
++          "maxItems": 100,
++          "items": { "type": "string", "minLength": 2, "maxLength": 80, "pattern": "^[^\\u0000-\\u001F\\u007F]+$" },
++          "description": "Per-meeting vocabulary sent as repeated keyterm form parts; values are confidential and must not be logged"
++        },
+         "recordingEnabled": { "type": "boolean" },
+         "captureSignalEnabled": { "type": "boolean", "description": "tee the raw captured-signal.v1 stream (audio frames + speaker events) to durable storage for offline replay (O-TEL-1); the transcript/recording paths are unaffected either way" },
+         "captureModes": { "type": "array", "items": { "type": "string" } },
+diff --git a/core/meetings/modules/gmeet-capture/src/gmeet-capture.test.ts b/core/meetings/modules/gmeet-capture/src/gmeet-capture.test.ts
+index f433074b..c47722f8 100644
+--- a/core/meetings/modules/gmeet-capture/src/gmeet-capture.test.ts
++++ b/core/meetings/modules/gmeet-capture/src/gmeet-capture.test.ts
+@@ -6,6 +6,7 @@
+  */
+ import { pickBoundName } from "./gmeet-capture-v1.js";
+ import { GmeetChannelBinder } from "./gmeet-channel-binder.js";
++import { reportGmeetStreamCount } from "./gmeet-capture.js";
+ 
+ let failed = 0;
+ const check = (name: string, cond: boolean) => { console.log(`  ${cond ? "✅" : "❌"} ${name}`); if (!cond) failed++; };
+@@ -30,5 +31,11 @@ b2.recordGlow("Zoe", false, 0);
+ b2.nameForChannel(7, 0, 0.5);                             // a single loud frame → score 1 < minScore
+ check("below the confidence floor → UNKNOWN (leak-free, never a guess)", b2.nameForChannel(7, 10, 0) === undefined);
+ 
++const presence: number[] = [];
++reportGmeetStreamCount(new Set(["muted-alice", "muted-bob"]), count => { presence.push(count); });
++reportGmeetStreamCount(new Set(), count => { presence.push(count); });
++check("connected muted streams publish fresh presence counts", presence.join(",") === "2,0");
++check("missing presence consumer is safe", (() => { reportGmeetStreamCount(new Set(["alice"])); return true; })());
++
+ if (failed) { console.error(`\n❌ gmeet-capture: ${failed} checks FAILED.`); process.exit(1); }
+ console.log(`\n✅ gmeet-capture: pure cores pass — honest glow binding + energy↔glow channel correlation. (DOM capture is live-validated.)`);
+diff --git a/core/meetings/modules/gmeet-capture/src/gmeet-capture.ts b/core/meetings/modules/gmeet-capture/src/gmeet-capture.ts
+index 683c8fd9..4064b798 100644
+--- a/core/meetings/modules/gmeet-capture/src/gmeet-capture.ts
++++ b/core/meetings/modules/gmeet-capture/src/gmeet-capture.ts
+@@ -19,6 +19,8 @@ import { createPcmCaptureNode } from './pcm-capture.js';
+ export interface GmeetCaptureOptions {
+   /** One per-element PCM chunk (already 16 kHz). index is the stable track index. */
+   onAudio: (index: number, pcm: Float32Array) => void;
++  /** Fresh count of connected remote streams, including muted participants. */
++  onStreamCount?: (count: number) => void | Promise<void>;
+   log?: (msg: string) => void;
+   targetSampleRate?: number;   // default 16000
+   bufferSize?: number;         // default 4096
+@@ -28,6 +30,14 @@ export interface GmeetCaptureOptions {
+   findDelayMs?: number;        // default 2000
+ }
+ 
++export function reportGmeetStreamCount(
++  connectedStreamIds: ReadonlySet<string>,
++  reporter?: (count: number) => void | Promise<void>,
++): void {
++  if (!reporter) return;
++  try { void reporter(connectedStreamIds.size); } catch { /* presence is best-effort telemetry */ }
++}
++
+ export interface GmeetCapture {
+   start(): Promise<void>;
+   stop(): void;
+@@ -83,10 +93,14 @@ export function createGmeetCapture(opts: GmeetCaptureOptions): GmeetCapture {
+       }).then((node) => { source.connect(node); node.connect(ctx.destination); })
+         .catch((err: any) => console.log(`[gmeet-capture] worklet init failed: ${err?.message}`));
+       connectedStreamIds.add(streamId);
++      reportGmeetStreamCount(connectedStreamIds, opts.onStreamCount);
+       contexts.push(ctx);
+ 
+       const track = stream.getAudioTracks()[0];
+-      track.addEventListener('ended', () => { connectedStreamIds.delete(streamId); });
++      track.addEventListener('ended', () => {
++        connectedStreamIds.delete(streamId);
++        reportGmeetStreamCount(connectedStreamIds, opts.onStreamCount);
++      });
+ 
+       log(`stream ${index} connected (track ${track.id.substring(0, 8)})`);
+       return true;
+@@ -122,8 +136,12 @@ export function createGmeetCapture(opts: GmeetCaptureOptions): GmeetCapture {
+             if (connectElement(el, nextIndex)) nextIndex++;
+           }
+         }
++        // Refresh even when the count is unchanged so the Node-side presence guard can
++        // distinguish a muted participant from a stale/dead browser observation.
++        reportGmeetStreamCount(connectedStreamIds, opts.onStreamCount);
+       }, RESCAN);
+ 
++      reportGmeetStreamCount(connectedStreamIds, opts.onStreamCount);
+       log(`capture started with ${connectedStreamIds.size} stream(s)`);
+     },
+ 
+@@ -133,6 +151,7 @@ export function createGmeetCapture(opts: GmeetCaptureOptions): GmeetCapture {
+       for (const ctx of contexts) { try { ctx.close(); } catch { /* ignore */ } }
+       contexts.length = 0;
+       connectedStreamIds.clear();
++      reportGmeetStreamCount(connectedStreamIds, opts.onStreamCount);
+       nextIndex = 0;
+       log('capture stopped');
+     },
+diff --git a/core/meetings/modules/join/package.json b/core/meetings/modules/join/package.json
+index 172af59d..c277e9a0 100644
+--- a/core/meetings/modules/join/package.json
++++ b/core/meetings/modules/join/package.json
+@@ -11,7 +11,8 @@
+   "files": ["dist"],
+   "scripts": {
+     "build": "tsc",
+-    "test": "tsx src/shared/selector-validity.test.ts && tsx src/googlemeet/admission.test.ts && tsx src/googlemeet/join-cta.test.ts && tsx src/googlemeet/session.test.ts && tsx src/googlemeet/leave.test.ts && tsx src/googlemeet/humanized/humanized.test.ts && tsx src/msteams/modals.test.ts && tsx src/msteams/admission.test.ts && tsx src/msteams/leave.test.ts && tsx src/msteams/removal.test.ts && tsx src/msteams/auth-redirect.test.ts && tsx src/msteams/join-passcode.test.ts && tsx src/zoom/join.test.ts && tsx src/zoom/admission.test.ts && tsx src/jitsi/join.test.ts && tsx src/jitsi/password.test.ts && tsx src/jitsi/admission.test.ts && tsx src/__tests__/defaultBotName.test.ts && tsx src/__tests__/unknownPlatform.test.ts && tsx src/__tests__/localePin.test.ts",
++    "test": "tsx src/shared/selector-validity.test.ts && tsx src/googlemeet/auth-redirect.test.ts && tsx src/googlemeet/admission.test.ts && tsx src/googlemeet/join-cta.test.ts && tsx src/googlemeet/session.test.ts && tsx src/googlemeet/leave.test.ts && tsx src/googlemeet/humanized/humanized.test.ts && tsx src/msteams/modals.test.ts && tsx src/msteams/admission.test.ts && tsx src/msteams/leave.test.ts && tsx src/msteams/removal.test.ts && tsx src/msteams/auth-redirect.test.ts && tsx src/msteams/join-passcode.test.ts && tsx src/zoom/join.test.ts && tsx src/zoom/admission.test.ts && tsx src/jitsi/join.test.ts && tsx src/jitsi/password.test.ts && tsx src/jitsi/admission.test.ts && tsx src/__tests__/defaultBotName.test.ts && tsx src/__tests__/unknownPlatform.test.ts && tsx src/__tests__/localePin.test.ts",
++    "test:browser": "tsx src/googlemeet/lobby-browser.test.ts",
+     "check:isolation": "node scripts/check-isolation.js"
+   },
+   "dependencies": {
+diff --git a/core/meetings/modules/join/src/googlemeet/admission.ts b/core/meetings/modules/join/src/googlemeet/admission.ts
+index 5af9938f..d1370336 100644
+--- a/core/meetings/modules/join/src/googlemeet/admission.ts
++++ b/core/meetings/modules/join/src/googlemeet/admission.ts
+@@ -12,6 +12,7 @@ import {
+ // AdmissionError + AdmissionOutcome moved to ../shared/admission so every platform (jitsi/zoom/
+ // teams) throws the SAME typed error the JoinDriver maps, without one platform depending on another.
+ import { AdmissionError } from "../shared/admission";
++import { throwIfGoogleAuthRedirect } from "./auth-guard";
+ 
+ // A LIVE reCAPTCHA challenge is a VISIBLE, challenge-sized `iframe[src*="recaptcha"]` —
+ // the "I'm not a robot" anchor or the opened bframe. Frame-URL presence is NOT a
+@@ -348,6 +349,7 @@ export async function waitForGoogleMeetingAdmission(
+   botConfig: BotConfig
+ ): Promise<boolean> {
+   try {
++    throwIfGoogleAuthRedirect(page);
+     log("Waiting for Google Meet meeting admission...");
+     
+     // Take screenshot at start of admission check
+@@ -426,6 +428,7 @@ export async function waitForGoogleMeetingAdmission(
+       const effectiveTimeout = () => timeout + getEscalationExtensionMs();
+ 
+       while (Date.now() - startTime < effectiveTimeout()) {
++        throwIfGoogleAuthRedirect(page);
+         // Host denial can leave stale waiting-room text in the DOM. Check the
+         // terminal rejection state before treating the page as still waiting.
+         await throwIfGoogleAdmissionRejected(page, "waiting-room polling");
+@@ -476,6 +479,7 @@ export async function waitForGoogleMeetingAdmission(
+       let unknownStateDuration2 = 0;
+       const effectiveTimeout2 = () => timeout + getEscalationExtensionMs();
+       while (Date.now() - startTime < effectiveTimeout2()) {
++        throwIfGoogleAuthRedirect(page);
+         // #444 — the `blocked` state is wired (callBlockedCallback), but NOT emitted yet.
+         // hasRecaptchaChallenge() detects a VISIBLE, challenge-sized widget, which is the
+         // narrow half of the signal; the blank block page half needs a run that actually
+@@ -528,6 +532,7 @@ export async function waitForGoogleMeetingAdmission(
+         const checkInterval = 2000;
+         const startTime2 = Date.now();
+         while (Date.now() - startTime2 < timeout) {
++          throwIfGoogleAuthRedirect(page);
+           await throwIfGoogleAdmissionRejected(page, "late waiting-room polling");
+ 
+           const stillWaiting = await checkForWaitingRoomIndicators(page);
+diff --git a/core/meetings/modules/join/src/googlemeet/auth-guard.ts b/core/meetings/modules/join/src/googlemeet/auth-guard.ts
+new file mode 100644
+index 00000000..29f7f321
+--- /dev/null
++++ b/core/meetings/modules/join/src/googlemeet/auth-guard.ts
+@@ -0,0 +1,56 @@
++import type { Page } from "playwright";
++import { AdmissionError } from "../shared/admission";
++
++export class AuthSessionError extends AdmissionError {
++  constructor(message = "auth_required: Google sign-in required; owner must re-authenticate the browser profile") {
++    super("auth_session_missing", message);
++    this.name = "AuthSessionError";
++  }
++}
++
++export function throwIfGoogleAuthRedirect(page: Page): void {
++  let url: URL;
++  try { url = new URL(page.url()); } catch { return; }
++  // Never put the URL, path, query, account identity or page text in diagnostics.
++  if (url.hostname === "accounts.google.com") throw new AuthSessionError();
++}
++
++const ROOM_CODE = /^[a-z]{3}-[a-z]{4}-[a-z]{3}$/;
++
++/**
++ * Classify a Google Meet pathname. The room code itself is never returned, so
++ * this is safe to use in diagnostics.
++ *
++ * Measured against the live service on 2026-10-29: requesting
++ * `https://meet.google.com/<code>` is rewritten to
++ * `https://meet.google.com/meet/<code>` and STAYS there for the whole pre-join
++ * flow. Both shapes are therefore real room paths. Treating only `/<code>` as a
++ * room made every real lobby fail the guard and skip CTA resolution entirely,
++ * which surfaced as "Join now is visible but no selector matched".
++ */
++export function classifyMeetPath(pathname: string): "room" | "meet-room" | "landing" | "other" {
++  const path = pathname.replace(/\/+$/, "");
++  if (ROOM_CODE.test(path.slice(1))) return "room";
++  if (path.startsWith("/meet/") && ROOM_CODE.test(path.slice("/meet/".length))) return "meet-room";
++  if (path === "" || path === "/" || path === "/landing") return "landing";
++  return "other";
++}
++
++export function isMeetLobbyUrl(page: Page): boolean {
++  try {
++    const url = new URL(page.url());
++    if (url.protocol !== "https:" || url.hostname !== "meet.google.com") return false;
++    const kind = classifyMeetPath(url.pathname);
++    return kind === "room" || kind === "meet-room";
++  } catch { return false; }
++}
++
++/** True when the page is Meet but not a room path (home, landing, unknown route).
++ *  Used only to explain a join timeout; it never authorizes a click. */
++export function isMeetNonRoomUrl(page: Page): boolean {
++  try {
++    const url = new URL(page.url());
++    return url.protocol === "https:" && url.hostname === "meet.google.com" &&
++      classifyMeetPath(url.pathname) !== "room" && classifyMeetPath(url.pathname) !== "meet-room";
++  } catch { return false; }
++}
+diff --git a/core/meetings/modules/join/src/googlemeet/auth-redirect.test.ts b/core/meetings/modules/join/src/googlemeet/auth-redirect.test.ts
+new file mode 100644
+index 00000000..e0437e7c
+--- /dev/null
++++ b/core/meetings/modules/join/src/googlemeet/auth-redirect.test.ts
+@@ -0,0 +1,57 @@
++import { strict as assert } from 'assert';
++import { joinGoogleMeeting, waitForLobbyCta } from './join';
++import { waitForGoogleMeetingAdmission } from './admission';
++import { AuthSessionError, isMeetLobbyUrl, classifyMeetPath } from './auth-guard';
++import { googleAuthJoinCtaSelectors } from './selectors';
++
++async function main() {
++  let clicks = 0;
++  const redirect = 'https://accounts.google.com/v3/signin/confirmidentifier?secret=must-not-appear';
++  const page: any = {
++    url: () => redirect, goto: async () => {}, screenshot: async () => {},
++    bringToFront: async () => {}, waitForTimeout: async () => {},
++    locator: () => ({ first: () => ({ isVisible: async () => true,
++      elementHandle: async () => ({ click: async () => { clicks++; } }) }) }),
++  };
++  const authError = (error: any) => error instanceof AuthSessionError &&
++    error.outcome === 'auth_session_missing' && !error.message.includes('secret') && !error.message.includes('https:');
++  for (const authenticated of [true, false]) {
++    await assert.rejects(joinGoogleMeeting(page, 'https://meet.google.com/abc-defg-hij', 'Bot',
++      { authenticated, platform: 'google_meet' } as any), authError);
++  }
++  await assert.rejects(waitForLobbyCta(page, googleAuthJoinCtaSelectors, 1000, 'CTA'), authError);
++  await assert.rejects(waitForGoogleMeetingAdmission(page, 1000, {} as any), authError);
++  assert.equal(clicks, 0);
++  assert.equal(isMeetLobbyUrl(page), false);
++  page.url = () => 'https://meet.google.com/abc-defg-hij?hl=en';
++  assert.equal(isMeetLobbyUrl(page), true);
++  // Meet serves and keeps `/meet/<code>` (measured live 2026-10-29).
++  page.url = () => 'https://meet.google.com/meet/abc-defg-hij?authuser=0';
++  assert.equal(isMeetLobbyUrl(page), true);
++  assert.equal(classifyMeetPath('/meet/abc-defg-hij'), 'meet-room');
++  assert.equal(classifyMeetPath('/abc-defg-hij/'), 'room');
++  for (const path of ['/', '/landing', '/abc-defg-hij/extra', '/meet/', '/meet/abc-defg', '/meet/abc-defg-hij/x']) {
++    assert.equal(classifyMeetPath(path), path === '/' || path === '/landing' ? 'landing' : 'other', path);
++  }
++  // A generic jsname+span button on Meet without positive lobby controls is not
++  // an admission CTA, even though the old selector would have matched it.
++  page.evaluate = async () => ({ lang: 'en', nav: 'en-US' });
++  page.locator = (selector: string) => ({ filter() { return this; }, first: () => ({
++    isVisible: async () => selector === 'button[jsname]:not([aria-label]):has(span)',
++    elementHandle: async () => ({ click: async () => { clicks++; } }),
++  }) });
++  await assert.rejects(waitForLobbyCta(page, ['button[jsname]:not([aria-label]):has(span)'], 0, 'CTA'));
++  assert.equal(clicks, 0);
++
++  // Redirect after the initial admission check, in the no-lobby polling loop.
++  let reads = 0;
++  page.url = () => ++reads === 1 ? 'https://meet.google.com/abc-defg-hij' : redirect;
++  page.evaluate = async () => false;
++  page.$ = async () => null;
++  page.frames = () => [];
++  page.locator = () => ({ count: async () => 0, first: () => ({ isVisible: async () => false }) });
++  await assert.rejects(waitForGoogleMeetingAdmission(page, 1000, {} as any), authError);
++  assert.ok(reads >= 2);
++  console.log('Google auth redirect: fail-fast before clicks and during admission; sanitized terminal verdict');
++}
++main().catch(error => { console.error(error); process.exit(1); });
+diff --git a/core/meetings/modules/join/src/googlemeet/join-cta.test.ts b/core/meetings/modules/join/src/googlemeet/join-cta.test.ts
+index 73cb0fe6..3dee7f9a 100644
+--- a/core/meetings/modules/join/src/googlemeet/join-cta.test.ts
++++ b/core/meetings/modules/join/src/googlemeet/join-cta.test.ts
+@@ -27,7 +27,7 @@
+  *   4. Ordered resolution: the selector list is honoured top-down, so a broad
+  *      structural entry can never beat a precise English one on the same DOM.
+  *   5. A total miss records the observed URL / html.lang / navigator.language
+- *      and the candidate labels into the thrown message, which is what reaches
++ *      and sanitized candidate counts into the thrown message, which reaches
+  *      `meeting.data.last_error` (#846 A4).
+  *
+  * FIXTURE HONESTY (#857): the lobby DOMs below are FABRICATED, not captured.
+@@ -357,8 +357,8 @@ const isCta = (el: Element | null) => el !== null && el.getAttribute('data-cta')
+         googleJoinButtonSelectors, 900, 'join button');
+     } catch (e: any) { message = String(e?.message || e); }
+     assert(returned === null, 'a unique scan hit is NOT returned as the CTA (diagnostic-only; the scan cannot click)');
+-    assert(/Could not locate join button/.test(message) && /Kérvényezés/.test(message),
+-      'the scan candidate label is recorded in the loud miss (evidence for a future re-promotion)');
++    assert(/Could not locate join button/.test(message) && /visible text button count: 1/.test(message) && !/Kérvényezés/.test(message),
++      'the scan count is recorded without copying page text into the loud miss');
+   }
+ 
+   console.log('\n=== 6. A total miss is diagnosable from last_error alone (#846 A4) ===');
+@@ -374,9 +374,9 @@ const isCta = (el: Element | null) => el !== null && el.getAttribute('data-cta')
+       'the historical error prefix is preserved verbatim (prod monitoring greps it)');
+     assert(/html\.lang=hu/.test(message) && /navigator\.language=hu-HU/.test(message),
+       'the observed UI locale is recorded in the error');
+-    assert(/url=https:\/\/meet\.google\.com\//.test(message), 'the observed URL is recorded in the error');
+-    assert(/Mégse/.test(message) && /Kérvényezés/.test(message),
+-      'the visible text-button labels are recorded — the next occurrence is a one-look diagnosis');
++    assert(/url=https:\/\/meet\.google\.com /.test(message), 'only the observed origin is recorded in the error');
++    assert(/visible text button count: 2/.test(message) && !/Mégse|Kérvényezés/.test(message),
++      'candidate counts are recorded, not arbitrary page text');
+     console.log(`    last_error.reason would read: ${message}`);
+   }
+ 
+@@ -394,8 +394,10 @@ function mockPage(m: {
+   return {
+     url: () => 'https://meet.google.com/abc-defg-hij',
+     locator: (sel: string) => ({
++      filter() { return this; },
++      count: async () => m.visible.includes(sel) ? 1 : 0,
+       first: () => ({
+-        isVisible: async () => m.visible.includes(sel),
++        isVisible: async () => sel === '[data-is-muted]' || m.visible.includes(sel),
+         elementHandle: async () => (m.visible.includes(sel) ? el : null),
+       }),
+     }),
+diff --git a/core/meetings/modules/join/src/googlemeet/join.ts b/core/meetings/modules/join/src/googlemeet/join.ts
+index 06fe9f80..4d175fcc 100644
+--- a/core/meetings/modules/join/src/googlemeet/join.ts
++++ b/core/meetings/modules/join/src/googlemeet/join.ts
+@@ -14,16 +14,8 @@ import {
+ import { HumanizedInteractor, MOCAP_LIBRARY } from "./humanized";
+ import { AdmissionError } from "../shared/admission";
+ import { resolveBotUiLocale } from "../browser-args";
+-
+-/** Thrown when authenticated mode detects a signed-out browser profile. Extends AdmissionError so
+- *  the JoinDriver's single `instanceof` catch maps the typed `auth_session_missing` outcome to a
+- *  PERMANENT completion reason instead of re-raising into a transient (retried) join_failure. */
+-export class AuthSessionError extends AdmissionError {
+-  constructor(message: string) {
+-    super("auth_session_missing", message);
+-    this.name = "AuthSessionError";
+-  }
+-}
++import { AuthSessionError, throwIfGoogleAuthRedirect, isMeetLobbyUrl, isMeetNonRoomUrl, classifyMeetPath } from "./auth-guard";
++export { AuthSessionError } from "./auth-guard";
+ 
+ /**
+  * Signed-out guard probe (authenticated mode): a guest lobby renders a name
+@@ -144,7 +136,9 @@ async function scanLobbyPrimaryCta(
+ 
+ /**
+  * First VISIBLE selector in list order, or null. Order is authoritative: the
+- * whole list is re-checked top-down on every poll, so the locale-agnostic entry
++ * whole list is re-checked top-down on every poll, filtering visibility before
++ * choosing a match. A hidden earlier DOM match cannot mask a visible control.
++ * The locale-agnostic entry
+  * can never be beaten to the punch by a broader English fallback (or the
+  * reverse). A per-selector parse/detach rejection never denies the rest their
+  * turn.
+@@ -154,8 +148,17 @@ async function firstVisibleSelector(
+   selectors: string[]
+ ): Promise<{ handle: ElementHandle<Element>; selector: string } | null> {
+   for (const sel of selectors) {
++    throwIfGoogleAuthRedirect(page);
++    if (sel === 'button[jsname]:not([aria-label]):has(span)') {
++      // This shape also exists on Google's sign-in and unrelated Meet pages.
++      // Permit the locale backstop only with positive lobby media controls.
++      if (!isMeetLobbyUrl(page)) continue;
++      try {
++        if (!(await page.locator('[data-is-muted]').filter({ visible: true }).first().isVisible())) continue;
++      } catch { continue; }
++    }
+     try {
+-      const loc = page.locator(sel).first();
++      const loc = page.locator(sel).filter({ visible: true }).first();
+       if (!(await loc.isVisible())) continue;
+       const handle = await loc.elementHandle({ timeout: 2000 });
+       if (handle) return { handle: handle as ElementHandle<Element>, selector: sel };
+@@ -169,27 +172,64 @@ async function firstVisibleSelector(
+  * the failure is diagnosable from `meeting.data.last_error` alone — the pods
+  * that saw the lobby are long gone by the time anyone reads it (#846 A4).
+  */
+-async function observedPageContext(page: Page): Promise<string> {
+-  let url = "?";
+-  try { url = page.url(); } catch { /* best-effort */ }
++async function observedPageContext(page: Page, selectors: string[] = []): Promise<string> {
++  let origin = "<other>", pathname = "<redacted>";
++  try {
++    const url = new URL(page.url());
++    if (url.protocol === "https:" && ["meet.google.com", "accounts.google.com"].includes(url.hostname)) {
++      origin = url.origin;
++      if (url.hostname === "meet.google.com") {
++        // One shared classifier with `isMeetLobbyUrl`; duplicating this regex is
++        // how `/meet/<room>` came to be treated as a non-room while still being
++        // labelled here. Never emit the room code.
++        const kind = classifyMeetPath(url.pathname);
++        if (kind === "room") pathname = "/<room>";
++        else if (kind === "meet-room") pathname = "/meet/<room>";
++        else if (kind === "landing") pathname = url.pathname;
++      }
++    }
++  } catch { /* best-effort; never emit arbitrary paths, hosts or queries */ }
++  const matches: unknown[] = [];
++  for (const [index, selector] of selectors.entries()) {
++    try {
++      const loc = page.locator(selector);
++      const count = await loc.count();
++      const visible = await loc.filter({ visible: true }).count();
++      const firstVisible = count > 0 ? await loc.first().isVisible() : false;
++      // Only fixed enums, never labels, IDs, classes, attributes or page text.
++      const first = count > 0 ? await loc.evaluateAll(elements => {
++        // Snapshot without locator auto-wait if the first node disappears.
++        const el = elements[0];
++        return el ? {
++          tag: ["button", "div", "span", "input", "a"].includes(el.tagName.toLowerCase()) ? el.tagName.toLowerCase() : "other",
++          role: el.getAttribute("role") === "button" ? "button" : el.hasAttribute("role") ? "other" : null,
++        } : null;
++      }) : null;
++      matches.push({ index, matches: count, visible, firstVisible, ...first });
++    } catch { matches.push({ index, unavailable: true }); }
++  }
++  const route = `url=${origin} pathname=${pathname} meetLobbyUrl=${isMeetLobbyUrl(page)}`;
++  let locale = "html.lang=? navigator.language=?";
++  let roleButtons: number | null = null;
+   try {
+     const ctx: any = await page.evaluate(() => ({
+       lang: document.documentElement.getAttribute("lang") || "",
+       nav: navigator.language || "",
+     }));
+-    return `url=${url} html.lang=${ctx.lang || "?"} navigator.language=${ctx.nav || "?"}`;
+-  } catch {
+-    return `url=${url} html.lang=? navigator.language=?`;
+-  }
++    const safeLocale = (value: unknown) => typeof value === "string" && /^[a-zA-Z-]{1,35}$/.test(value) ? value : "?";
++    locale = `html.lang=${safeLocale(ctx.lang)} navigator.language=${safeLocale(ctx.nav)}`;
++    roleButtons = await page.locator('[role="button"]').filter({ visible: true }).count();
++  } catch { /* best-effort */ }
++  return `${route} ${locale}; selectorMatches=${JSON.stringify(matches)}; ${JSON.stringify({ visibleRoleButtons: roleButtons })}`;
+ }
+ 
+ /**
+  * Screenshot + compose the LOUD failure message for a total selector miss
+  * (no-fallbacks.md — a missing control fails with a logged reason + screenshot,
+  * never a silent skip). The message keeps its historical prefix verbatim (prod
+- * monitoring greps it) and appends the observed locale/URL, plus the visible
+- * text-button labels when a structural scan ran — the one datum that turns the
+- * next occurrence into a one-look diagnosis.
++ * monitoring greps it) and appends redacted route shape, guard verdict, locale,
++ * selector counts and fixed tag/role enums. Page text and identity-bearing URL
++ * components never enter the diagnostic. Screenshots remain private evidence.
+  */
+ export async function describeSelectorMiss(
+   page: Page,
+@@ -201,10 +241,10 @@ export async function describeSelectorMiss(
+   const shot = `/app/storage/screenshots/bot-checkpoint-${label.replace(/[^a-z0-9]+/gi, "-")}-not-found.png`;
+   try { await page.screenshot({ path: shot, fullPage: true }); } catch { /* best-effort */ }
+   log(`📸 Screenshot: ${label} not found by any of ${selectors.length} selectors (tried: ${selectors.join(" | ")})`);
+-  const context = await observedPageContext(page);
++  const context = await observedPageContext(page, selectors);
+   const seen = candidateLabels === null
+     ? ""
+-    : `; visible text buttons: ${candidateLabels.length === 0 ? "(none)" : candidateLabels.map((t) => `"${t}"`).join(" | ")}`;
++    : `; visible text button count: ${candidateLabels.length}`;
+   return `Could not locate ${label} by any locale-agnostic or English selector after ${timeoutMs}ms (${context}${seen})`;
+ }
+ 
+@@ -245,8 +285,8 @@ export async function waitForAnySelector(
+  * locale is now pinned, so Meet renders English by construction and the exact
+  * selectors above resolve it deterministically.
+  *
+- * What the scan is kept for: (a) its candidate labels feed the failure diagnostic
+- * (so a total miss still records every visible text button), and (b) when it WOULD
++ * What the scan is kept for: (a) its candidate count feeds the failure diagnostic,
++ * and (b) when it WOULD
+  * have uniquely resolved a lobby that the selector list could not, it logs a
+  * telemetry line — that is the only evidence a future re-promotion could stand on
+  * (does a real non-English lobby exist where the scan uniquely wins?). It does not
+@@ -261,11 +301,22 @@ export async function waitForLobbyCta(
+   const started = Date.now();
+   const graceMs = Math.min(CTA_SCAN_GRACE_MS, Math.floor(timeoutMs / 3));
+   let polls = 0;
++  let reportedNonRoom = false;
+   // null until the scan has actually run: "(none)" must mean "the lobby showed
+   // no text-labelled button", never "the scan never got to look".
+   let lastLabels: string[] | null = null;
+   do {
+-    const hit = await firstVisibleSelector(page, selectors);
++    throwIfGoogleAuthRedirect(page);
++    // A Meet page that is not a room route can never yield a lobby CTA. Report it
++    // once, with a sanitized path kind, instead of polling silently to timeout.
++    if (!reportedNonRoom && isMeetNonRoomUrl(page)) {
++      reportedNonRoom = true;
++      let kind = "unknown";
++      try { kind = classifyMeetPath(new URL(page.url()).pathname); } catch { /* best-effort */ }
++      log(`Lobby CTA wait: Meet page is not a room route (pathKind=${kind}); no CTA resolved until the room route loads`);
++    }
++    // Selectors only operate on the actual Meet room, never a login/consent site.
++    const hit = isMeetLobbyUrl(page) ? await firstVisibleSelector(page, selectors) : null;
+     if (hit) {
+       log(`Located ${label} via selector: ${hit.selector}`);
+       return hit;
+@@ -279,7 +330,7 @@ export async function waitForLobbyCta(
+       // lobby exists where re-promoting the scan would help. We do NOT click it,
+       // and we dispose the handle so nothing downstream can.
+       if (scan.handle) {
+-        log(`structural scan candidate (diagnostic-only): "${scan.labels[0]}"`);
++        log("structural scan candidate (diagnostic-only): count=1");
+         try { await scan.handle.dispose(); } catch { /* best-effort */ }
+       }
+     }
+@@ -318,6 +369,7 @@ export async function joinGoogleMeeting(
+ ): Promise<void> {
+   const navUrl = withPinnedMeetLocale(meetingUrl, resolveBotUiLocale());
+   await page.goto(navUrl, { waitUntil: "domcontentloaded" });
++  throwIfGoogleAuthRedirect(page);
+   await page.bringToFront();
+ 
+   // Take screenshot after navigation
+@@ -359,6 +411,8 @@ export async function joinGoogleMeeting(
+   // Click a resolved element handle via humanized motion, falling back to a
+   // synthetic handle click if humanized interaction is off or errors.
+   const clickHandle = async (handle: ElementHandle<Element>, label: string): Promise<void> => {
++    throwIfGoogleAuthRedirect(page);
++    if (!isMeetLobbyUrl(page)) throw new AdmissionError("join_failure", "Join control outside Meet lobby");
+     if (humanizer) {
+       try {
+         await humanizer.navigateAndClick(page, handle);
+diff --git a/core/meetings/modules/join/src/googlemeet/lobby-browser.test.ts b/core/meetings/modules/join/src/googlemeet/lobby-browser.test.ts
+new file mode 100644
+index 00000000..75ddbafd
+--- /dev/null
++++ b/core/meetings/modules/join/src/googlemeet/lobby-browser.test.ts
+@@ -0,0 +1,92 @@
++/** Synthetic DOM regression, NOT a captured Google DOM or a live join witness.
++ * Run explicitly with a locally installed Chromium: PLAYWRIGHT_CHROMIUM_EXECUTABLE=…
++ * pnpm --filter @vexa/join exec tsx src/googlemeet/lobby-browser.test.ts
++ */
++import { strict as assert } from 'assert';
++import { chromium } from 'playwright';
++import { waitForLobbyCta, describeSelectorMiss } from './join';
++import { isMeetLobbyUrl } from './auth-guard';
++import { googleAuthJoinCtaSelectors } from './selectors';
++
++async function main() {
++  const browser = await chromium.launch({
++    executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || undefined,
++  });
++  try {
++    const page = await browser.newPage();
++    // All navigation is fulfilled locally. No Google traffic, cookies or joins.
++    await page.route('**/*', route => route.fulfill({ contentType: 'text/html', body: '<html lang="en"><body></body></html>' }));
++    await page.goto('https://meet.google.com/abc-defg-hij?secret=do-not-log');
++    await page.setContent(`<button hidden jsname="old"><span>Join now</span></button>
++      <button data-is-muted="true" aria-label="Microphone">mic</button>
++      <button id="join" jsname="current"><span>Join now</span></button>`);
++    const selector = googleAuthJoinCtaSelectors[0];
++    assert.equal(isMeetLobbyUrl(page), true);
++    assert.equal(await page.locator(selector).count(), 2);
++    assert.equal(await page.locator(selector).first().isVisible(), false);
++    assert.equal(await page.locator(selector).nth(1).isVisible(), true);
++    console.log('RED mechanism: guard=true, matches=2, firstVisible=false, secondVisible=true');
++    const hit = await waitForLobbyCta(page, googleAuthJoinCtaSelectors, 0, 'join CTA');
++    assert.equal(await hit.handle.getAttribute('id'), 'join');
++    assert.equal(hit.selector, selector);
++    console.log('PASS hidden-first duplicate: same ordered selector resolves visible CTA');
++
++    // An earlier broad candidate must not beat the exact selector.
++    await page.setContent(`<button data-is-muted="true">mic</button>
++      <button jsname="wrong"><span>Other ways to join</span></button>
++      <button id="exact"><span>Join now</span></button>`);
++    const exact = await waitForLobbyCta(page, googleAuthJoinCtaSelectors, 0, 'join CTA');
++    assert.equal(await exact.handle.getAttribute('id'), 'exact');
++    console.log('PASS selector priority: exact before broad');
++
++    // Evidence for role-only controls is diagnostic, not authorization to click.
++    await page.setContent('<div role="button">Join now</div><button hidden>Join now</button>');
++    const diagnostic = await describeSelectorMiss(page, googleAuthJoinCtaSelectors, 0, 'join CTA', ['private participant']);
++    assert.match(diagnostic, /meetLobbyUrl=true/);
++    assert.match(diagnostic, /pathname=\/<room>/);
++    assert.match(diagnostic, /"matches":1/);
++    assert.match(diagnostic, /"firstVisible":false/);
++    assert.match(diagnostic, /"tag":"button"/);
++    assert.match(diagnostic, /"visibleRoleButtons":1/);
++    for (const secret of ['abc-defg-hij', 'secret', 'do-not-log', 'private participant']) assert.ok(!diagnostic.includes(secret));
++    console.log(diagnostic);
++    console.log('PASS sanitized diagnostics: path/guard/counts/tag/role/hidden-first, no text/query/room code');
++    // Live-measured production URL shape (2026-10-29): Meet serves every pre-join
++    // room as `/meet/<code>` and keeps it there. Treating that as a non-room made
++    // the guard skip CTA resolution on a real lobby — the Windmill no-join.
++    for (const url of [
++      'https://meet.google.com/meet/abc-defg-hij?authuser=0&secret=do-not-log',
++      'https://meet.google.com/meet/abc-defg-hij/',
++    ]) {
++      await page.goto(url);
++      await page.setContent('<button data-is-muted="true">mic</button><button id="served"><span>Join now</span></button>');
++      assert.equal(isMeetLobbyUrl(page), true);
++      const served = await waitForLobbyCta(page, googleAuthJoinCtaSelectors, 0, 'join CTA');
++      assert.equal(await served.handle.getAttribute('id'), 'served');
++      const diagnostic = await describeSelectorMiss(page, googleAuthJoinCtaSelectors, 0, 'join CTA', null);
++      assert.match(diagnostic, /pathname=\/meet\/<room> meetLobbyUrl=true/);
++      for (const secret of ['abc-defg-hij', 'secret', 'do-not-log', 'authuser']) assert.ok(!diagnostic.includes(secret));
++    }
++    console.log('PASS production /meet/<room> route is a lobby; CTA resolves; query and code stay redacted');
++
++    for (const url of [
++      'https://meet.google.com/landing',
++      'https://meet.google.com.evil.invalid/abc-defg-hij',
++      'https://meet.google.com/abc-defg-hij/extra',
++    ]) {
++      await page.goto(url);
++      await page.setContent('<button>Join now</button>');
++      assert.equal(isMeetLobbyUrl(page), false);
++      await assert.rejects(waitForLobbyCta(page, googleAuthJoinCtaSelectors, 0, 'join CTA'));
++    }
++    console.log('PASS guards unchanged: landing/foreign/deeper routes blocked');
++    await page.goto('https://accounts.google.com/v3/signin/confirmidentifier?secret=do-not-log');
++    await page.setContent('<button jsname="login"><span>Join now</span></button>');
++    await assert.rejects(waitForLobbyCta(page, googleAuthJoinCtaSelectors, 0, 'join CTA'),
++      (error: any) => error.outcome === 'auth_session_missing' && !error.message.includes('secret'));
++    console.log('PASS guards unchanged: noncanonical/foreign URLs blocked; Accounts typed auth failure');
++  } finally {
++    await browser.close();
++  }
++}
++main().catch(error => { console.error(error); process.exit(1); });
+diff --git a/core/meetings/modules/join/src/googlemeet/selectors.ts b/core/meetings/modules/join/src/googlemeet/selectors.ts
+index 6dd27211..c175ebe2 100644
+--- a/core/meetings/modules/join/src/googlemeet/selectors.ts
++++ b/core/meetings/modules/join/src/googlemeet/selectors.ts
+@@ -360,7 +360,8 @@ export const googleNameInputSelectors: string[] = [
+   'input[placeholder*="Name"]'
+ ];
+ 
+-// Authenticated-lobby primary CTA — "Join now" / "Switch here" / "Ask to join".
++// Authenticated-lobby primary CTA — "Join now" / "Switch here" / "Join anyway" /
++// "Ask to join".
+ // Same ordering rule as googleJoinButtonSelectors above: ordered resolution makes
+ // list position authoritative, so the EXACT text selectors come FIRST and the
+ // broad structural `button[jsname]:not([aria-label]):has(span)` entry comes LAST.
+@@ -371,6 +372,7 @@ export const googleAuthJoinCtaSelectors: string[] = [
+   // Exact text FIRST.
+   'button:has-text("Join now")',
+   'button:has-text("Switch here")',
++  'button:has-text("Join anyway")',
+   'button:has-text("Ask to join")',
+   // Broad structural backstop LAST.
+   'button[jsname]:not([aria-label]):has(span)'
+@@ -485,4 +487,3 @@ export const browserContextSelectorArrays: string[] = [
+   'googleLeaveButtonMatchers',
+   'googleLobbyIconGlyphSelectors',
+ ];
+-
+diff --git a/core/meetings/modules/join/src/googlemeet/session.test.ts b/core/meetings/modules/join/src/googlemeet/session.test.ts
+index 137eb9b8..9440e615 100644
+--- a/core/meetings/modules/join/src/googlemeet/session.test.ts
++++ b/core/meetings/modules/join/src/googlemeet/session.test.ts
+@@ -69,8 +69,9 @@ function mockPage(visible: string[]) {
+         : Promise.reject(new Error(`mock: ${sel} not on page`)),
+     $: async (sel: string) => (visible.includes(sel) ? handle(sel) : null),
+     locator: (sel: string) => ({
++      filter() { return this; },
+       first: () => ({
+-        isVisible: async () => visible.includes(sel),
++        isVisible: async () => sel === '[data-is-muted]' || visible.includes(sel),
+         elementHandle: async () => (visible.includes(sel) ? handle(sel) : null),
+       }),
+     }),
+@@ -126,6 +127,8 @@ function check(name: string, ok: boolean, detail = '') {
+     CTA_STRUCTURAL.length > 0
+     && isEnglishLiteral(googleAuthJoinCtaSelectors[0])
+     && !isEnglishLiteral(googleAuthJoinCtaSelectors[googleAuthJoinCtaSelectors.length - 1]));
++  check('the CTA array handles Google\'s existing-session "Join anyway" state',
++    googleAuthJoinCtaSelectors.includes('button:has-text("Join anyway")'));
+   check('the probe array leads with structural selectors', PROBE_STRUCTURAL.length > 0 && !isEnglishLiteral(googleSignedOutLobbyProbeSelectors[0]));
+ 
+   // 3. Signed-out NON-ENGLISH lobby: every English-literal selector misses;
+diff --git a/core/meetings/modules/whisper/package.json b/core/meetings/modules/whisper/package.json
+index bda79dd2..adc209a9 100644
+--- a/core/meetings/modules/whisper/package.json
++++ b/core/meetings/modules/whisper/package.json
+@@ -11,7 +11,7 @@
+   "files": ["dist"],
+   "scripts": {
+     "build": "tsc",
+-    "test": "tsx src/confidence.test.ts && tsx src/errors.test.ts && tsx src/model.test.ts",
++    "test": "tsx src/confidence.test.ts && tsx src/errors.test.ts && tsx src/model.test.ts && tsx src/keyterms.test.ts",
+     "check:isolation": "node scripts/check-isolation.js"
+   },
+   "devDependencies": {
+diff --git a/core/meetings/modules/whisper/src/keyterms.test.ts b/core/meetings/modules/whisper/src/keyterms.test.ts
+new file mode 100644
+index 00000000..f7240a58
+--- /dev/null
++++ b/core/meetings/modules/whisper/src/keyterms.test.ts
+@@ -0,0 +1,26 @@
++import { strict as assert } from 'assert';
++import { TranscriptionClient, normalizeKeyterms } from './transcription-client.js';
++
++async function main() {
++  assert.deepEqual(normalizeKeyterms([' MeetingLab ', 'meetinglab', 'Nova   Three']), ['MeetingLab', 'Nova Three']);
++  for (const invalid of [[''], ['x'], ['line\nbreak'], ['x'.repeat(81)], Array(101).fill('term')]) {
++    assert.throws(() => normalizeKeyterms(invalid), TypeError);
++  }
++  const fetch = globalThis.fetch;
++  const bodies: string[] = [];
++  globalThis.fetch = async (_url, init) => {
++    bodies.push(Buffer.from(init!.body as Buffer).toString('utf8'));
++    return new Response(JSON.stringify({ text: 'ok', language: 'en', duration: 0.1, segments: [] }));
++  };
++  try {
++    await new TranscriptionClient({ serviceUrl: 'https://stt.invalid', model: 'nova-3',
++      keyterms: ['MeetingLab', 'Hermes', 'meetinglab'] }).transcribe(new Float32Array(160));
++    const values = Array.from(bodies[0].matchAll(/name="keyterm"\r\n\r\n([^\r]+)\r\n/g), match => match[1]);
++    assert.deepEqual(values, ['MeetingLab', 'Hermes']);
++    assert.match(bodies[0], /name="model"\r\n\r\nnova-3\r\n/);
++    await new TranscriptionClient({ serviceUrl: 'https://stt.invalid' }).transcribe(new Float32Array(160));
++    assert.ok(!bodies[1].includes('name="keyterm"'));
++    console.log('PASS keyterms: normalization, rejection bounds, repeated multipart fields, model and empty control');
++  } finally { globalThis.fetch = fetch; }
++}
++main().catch(error => { console.error(error); process.exit(1); });
+diff --git a/core/meetings/modules/whisper/src/transcription-client.ts b/core/meetings/modules/whisper/src/transcription-client.ts
+index 4a1c60e4..6bdb0263 100644
+--- a/core/meetings/modules/whisper/src/transcription-client.ts
++++ b/core/meetings/modules/whisper/src/transcription-client.ts
+@@ -16,6 +16,7 @@ export interface TranscriptionSegment {
+   no_speech_prob?: number;
+   compression_ratio?: number;
+   words?: TranscriptionWord[];
++  confidence?: number;
+ }
+ 
+ export interface TranscriptionResult {
+@@ -24,6 +25,7 @@ export interface TranscriptionResult {
+   language_probability?: number;
+   duration: number;
+   segments: TranscriptionSegment[];
++  provider_metadata?: Record<string, unknown>;
+ }
+ 
+ export interface TranscriptionClientConfig {
+@@ -49,6 +51,8 @@ export interface TranscriptionClientConfig {
+    *  (Groq, vLLM, gateways) need their served name; the bundled unit ignores it (its model is
+    *  the unit's own MODEL_SIZE). Default: "whisper-1". */
+   model?: string;
++  /** Confidential per-request vocabulary, sent as repeated `keyterm` multipart fields. */
++  keyterms?: string[];
+ }
+ 
+ /** The STT boundary's FAILURE vocabulary (P5 + P18: an adapter must translate the
+@@ -102,6 +106,7 @@ export class TranscriptionClient {
+   private maxSpeechDurationSec: number | undefined;
+   private minSilenceDurationMs: number | undefined;
+   private model: string;
++  private keyterms: string[];
+   private responseFormat: 'verbose_json' | 'json' = 'verbose_json';
+   constructor(config: TranscriptionClientConfig) {
+     // Ensure serviceUrl ends with the transcriptions endpoint
+@@ -117,6 +122,7 @@ export class TranscriptionClient {
+     this.maxSpeechDurationSec = config.maxSpeechDurationSec;
+     this.minSilenceDurationMs = config.minSilenceDurationMs;
+     this.model = config.model ?? 'whisper-1';
++    this.keyterms = normalizeKeyterms(config.keyterms ?? []);
+   }
+ 
+   /**
+@@ -210,6 +216,15 @@ export class TranscriptionClient {
+       `word\r\n`
+     ));
+ 
++    // Provider-neutral vocabulary extension. One field per term is required by Deepgram Nova-3.
++    for (const keyterm of this.keyterms) {
++      parts.push(Buffer.from(
++        `--${boundary}\r\n` +
++        `Content-Disposition: form-data; name="keyterm"\r\n\r\n` +
++        `${keyterm}\r\n`
++      ));
++    }
++
+     // Max speech segment duration (controls how often Whisper splits segments)
+     if (this.maxSpeechDurationSec !== undefined) {
+       parts.push(Buffer.from(
+@@ -275,6 +290,7 @@ export class TranscriptionClient {
+         no_speech_prob: s.no_speech_prob,
+         compression_ratio: s.compression_ratio,
+         words: s.words,
++        confidence: s.confidence,
+       }));
+       // Drop low-confidence (hallucinated / faint-bleed) segments at the source and
+       // rebuild the text from what survives, so phantoms never reach the pipeline.
+@@ -292,6 +308,7 @@ export class TranscriptionClient {
+         language_probability: data.language_probability ?? 0,
+         duration: data.duration || 0,
+         segments,
++        provider_metadata: data.provider_metadata,
+       };
+     } finally {
+       clearTimeout(timeoutId);
+@@ -344,3 +361,32 @@ export class TranscriptionClient {
+     return buffer;
+   }
+ }
++
++const MAX_KEYTERMS = 100;
++const MAX_KEYTERM_LENGTH = 80;
++const MAX_KEYTERM_TOKENS = 500;
++const CONTROL_CHARACTER = /[\u0000-\u001f\u007f]/;
++
++export function normalizeKeyterms(values: string[]): string[] {
++  if (values.length > MAX_KEYTERMS) throw new TypeError(`keyterms accepts at most ${MAX_KEYTERMS} entries`);
++  const result: string[] = [];
++  const seen = new Set<string>();
++  let estimatedTokens = 0;
++  for (const value of values) {
++    if (typeof value !== 'string') throw new TypeError('keyterms entries must be strings');
++    if (CONTROL_CHARACTER.test(value)) throw new TypeError('keyterms entries cannot contain control characters');
++    const term = value.trim().replace(/\s+/g, ' ');
++    if (!term) throw new TypeError('keyterms entries cannot be empty');
++    if (term.length < 2) throw new TypeError('keyterms entries must contain at least 2 characters');
++    if (term.length > MAX_KEYTERM_LENGTH) throw new TypeError(`keyterms entries cannot exceed ${MAX_KEYTERM_LENGTH} characters`);
++    const folded = term.toLocaleLowerCase('en-US');
++    if (!seen.has(folded)) {
++      const nextTokens = estimatedTokens + Math.max(1, Math.ceil(term.length / 4));
++      if (nextTokens > MAX_KEYTERM_TOKENS) throw new TypeError(`keyterms exceeds the ${MAX_KEYTERM_TOKENS}-token vocabulary budget`);
++      seen.add(folded);
++      estimatedTokens = nextTokens;
++      result.push(term);
++    }
++  }
++  return result;
++}
+diff --git a/core/meetings/services/bot/src/aloneness.test.ts b/core/meetings/services/bot/src/aloneness.test.ts
+index 15758191..5405a62b 100644
+--- a/core/meetings/services/bot/src/aloneness.test.ts
++++ b/core/meetings/services/bot/src/aloneness.test.ts
+@@ -41,6 +41,7 @@ const quietEnergy = 0.001;
+ function fixture(windowMs = 1_000, extra: {
+   adapters?: Parameters<typeof createSilenceAlonenessSource>[0]['adapters'];
+   onCaptureFault?: () => void;
++  startupWindowMs?: number;
+ } = {}) {
+   const clock = new FakeClock();
+   const scheduler = new FakeScheduler();
+@@ -49,6 +50,7 @@ function fixture(windowMs = 1_000, extra: {
+   const source = createSilenceAlonenessSource({
+     activity,
+     windowMs,
++    startupWindowMs: extra.startupWindowMs,
+     adapters: extra.adapters,
+     onCaptureFault: extra.onCaptureFault,
+     now: clock.now,
+@@ -60,6 +62,22 @@ function fixture(windowMs = 1_000, extra: {
+   return { clock, scheduler, activity, source, logs };
+ }
+ 
++// Startup silence may wait longer than the normal everyone-left window. Once any qualifying remote
++// frame arrives, the shorter normal window applies.
++{
++  const f = fixture(1_000, { startupWindowMs: 2_000 });
++  let fired = 0;
++  f.activity.ready();
++  f.source.onAlone(() => fired++);
++  f.clock.advance(1_000); f.scheduler.tick();
++  check('startup window holds beyond the normal silence window', fired === 0);
++  f.clock.advance(500); f.activity.observeRemoteEnergy(loudEnergy);
++  f.clock.advance(999); f.scheduler.tick();
++  check('first remote frame switches to the normal window', fired === 0);
++  f.clock.advance(1); f.scheduler.tick();
++  check('normal window fires after startup remote activity', fired === 1);
++}
++
+ // silence(W) fires once from the capture-ready anchor.
+ {
+   const f = fixture();
+diff --git a/core/meetings/services/bot/src/aloneness.ts b/core/meetings/services/bot/src/aloneness.ts
+index 3276e589..9c43b996 100644
+--- a/core/meetings/services/bot/src/aloneness.ts
++++ b/core/meetings/services/bot/src/aloneness.ts
+@@ -223,6 +223,7 @@ export function resolveAloneSilenceWindowMs(
+ export function createSilenceAlonenessSource(options: {
+   activity: RemoteAudioActivitySource;
+   windowMs: number;
++  startupWindowMs?: number;
+   adapters?: readonly AlonenessAdapter[];
+   now?: () => number;
+   pollMs?: number;
+@@ -261,9 +262,12 @@ export function createSilenceAlonenessSource(options: {
+         if (stopped || fired || adapters.length === 0) return;
+         const at = now();
+         const snapshot = options.activity.snapshot();
++        const windowMs = (snapshot.framesDelivered ?? 0) > 0
++          ? options.windowMs
++          : (options.startupWindowMs ?? options.windowMs);
+         let captureFault = false;
+         for (const adapter of adapters) {
+-          const verdict = adapter.evaluate(snapshot, at, options.windowMs);
++          const verdict = adapter.evaluate(snapshot, at, windowMs);
+           // A deaf capture is not a leave and not a veto: it withholds the verdict and reports.
+           if (verdict === 'capture-fault') { captureFault = true; continue; }
+           if (verdict !== 'alone') return;
+@@ -277,7 +281,7 @@ export function createSilenceAlonenessSource(options: {
+             captureFaultLoggedAt = at;
+             log(`aloneness: capture-fault suspected (streams=${snapshot.streamsConnected}, no frames for window)`
+               + ` — holding left_alone (frames_delivered=${snapshot.framesDelivered ?? 0},`
+-              + ` last_frame_at=${snapshot.lastRemoteFrameAt ?? 'never'}, window_ms=${options.windowMs},`
++              + ` last_frame_at=${snapshot.lastRemoteFrameAt ?? 'never'}, window_ms=${windowMs},`
+               + ` deaf_for_ms=${at - captureFaultSince})`);
+           }
+           if (!captureFaultRepairAttempted && options.onCaptureFault) {
+@@ -291,7 +295,7 @@ export function createSilenceAlonenessSource(options: {
+         captureFaultLoggedAt = null;
+         fired = true;
+         stop();
+-        log(`aloneness: silence verdict (last_remote_audio_at=${snapshot.lastRemoteAudioAt}, window_ms=${options.windowMs})`);
++        log(`aloneness: silence verdict (last_remote_audio_at=${snapshot.lastRemoteAudioAt}, window_ms=${windowMs})`);
+         callback();
+       };
+ 
+diff --git a/core/meetings/services/bot/src/capture-bridge.ts b/core/meetings/services/bot/src/capture-bridge.ts
+index 86ce7c9b..c1935de4 100644
+--- a/core/meetings/services/bot/src/capture-bridge.ts
++++ b/core/meetings/services/bot/src/capture-bridge.ts
+@@ -562,6 +562,17 @@ export interface BrowserSession {
+   close(): Promise<void>;
+ }
+ 
++/** Compose join flags without letting the guest-only incognito flag erase an authenticated
++ * profile. Guest launches retain the canonical join set unchanged. */
++export function browserArgsForInvocation(authenticated: boolean): string[] {
++  const joinArgs = getJoinBrowserArgs();
++  if (!authenticated) return joinArgs;
++  return [
++    ...getAuthenticatedBrowserArgs(),
++    ...joinArgs.filter((arg) => arg !== '--incognito'),
++  ];
++}
++
+ /**
+  * Launch the browser the bot joins through. Authenticated bots restore the persistent profile
+  * from S3 first (so they join as a signed-in user); guest bots launch a fresh persistent context.
+@@ -589,10 +600,7 @@ export async function launchBrowser(inv: Invocation): Promise<BrowserSession> {
+     cleanStaleLocks(dataDir);
+   }
+ 
+-  // getAuthenticatedBrowserArgs() is the minimal clean set remote-browser uses for signed-in
+-  // joins; getJoinBrowserArgs() adds the fake-device / autoplay flags the join lane needs. The
+-  // join args win on conflict (later wins in Chromium arg parsing).
+-  const args = [...getAuthenticatedBrowserArgs(), ...getJoinBrowserArgs()];
++  const args = browserArgsForInvocation(!!inv.authenticated);
+   const { context, page } = await launchPersistentBrowser({ dataDir, args });
+ 
+   // Voice-agent gate the page reads to decide whether to keep the mic hot (production parity).
+@@ -1280,6 +1288,7 @@ export async function startCaptureBridge(
+         ?? w.VexaBrowserUtils.createGmeetSpeakers?.({ log: (m: string) => w.logBot?.('[PerSpeaker] ' + m) });
+       w.__vexaGmeetCapture = w.VexaBrowserUtils.createGmeetCapture({
+         log: (m: string) => w.logBot?.('[PerSpeaker] ' + m),
++        onStreamCount: (count: number) => { void w.__vexaStreamPresence?.(count); },
+         onAudio: (index: number, pcm: Float32Array) => {
+           w.__vexaGmeetSpeakers?.reportTrackAudio?.(index);
+           // Bind the glow name at capture time (the v1 producer's inversion): exactly-one-lit ⇒ name.
+diff --git a/core/meetings/services/bot/src/config.test.ts b/core/meetings/services/bot/src/config.test.ts
+index 54491554..ee858b34 100644
+--- a/core/meetings/services/bot/src/config.test.ts
++++ b/core/meetings/services/bot/src/config.test.ts
+@@ -39,6 +39,7 @@ for (const g of goldens) {
+   check('full: automaticLeave threaded', full.automaticLeave?.waitingRoomTimeout === 300000, String(full.automaticLeave?.waitingRoomTimeout));
+   check('full: secret token present (not logged)', typeof full.token === 'string' && full.token.length > 0);
+   check('full: transcriptionModel threaded (#522)', full.transcriptionModel === 'whisper-large-v3-turbo', String(full.transcriptionModel));
++  check('full: transcriptionKeyterms threaded without logging values', full.transcriptionKeyterms?.length === 3, String(full.transcriptionKeyterms?.length));
+   check('full: captureSignalEnabled threaded (O-TEL-1)', full.captureSignalEnabled === true, String(full.captureSignalEnabled));
+ }
+ 
+diff --git a/core/meetings/services/bot/src/config.ts b/core/meetings/services/bot/src/config.ts
+index 33432c54..eb87e4c5 100644
+--- a/core/meetings/services/bot/src/config.ts
++++ b/core/meetings/services/bot/src/config.ts
+@@ -78,6 +78,7 @@ export interface Invocation {
+   transcriptionServiceUrl?: string;
+   transcriptionServiceToken?: string;
+   transcriptionModel?: string | null;
++  transcriptionKeyterms?: string[];
+   // ── recording ──
+   recordingEnabled?: boolean;
+   captureSignalEnabled?: boolean;
+diff --git a/core/meetings/services/bot/src/index.ts b/core/meetings/services/bot/src/index.ts
+index 13d2ae7e..8a712680 100644
+--- a/core/meetings/services/bot/src/index.ts
++++ b/core/meetings/services/bot/src/index.ts
+@@ -219,6 +219,7 @@ export async function main(env: NodeJS.ProcessEnv = process.env): Promise<number
+   const speakerStreamConfig = speakerStreamConfigFromEnv(env);
+   const remoteAudioActivity = createRemoteAudioActivityTap();
+   const aloneSilenceWindowMs = resolveAloneSilenceWindowMs(inv.automaticLeave?.everyoneLeftTimeout, env);
++  const startupSilenceWindowMs = inv.automaticLeave?.noOneJoinedTimeout ?? aloneSilenceWindowMs;
+   // #1192: the guard's one repair attempt, resolved late — the aloneness monitor is built before
+   // the browser exists, and the restart needs the live page. Unset until the session launches
+   // (and after a launch failure), in which case the guard just holds and keeps checking.
+@@ -226,9 +227,10 @@ export async function main(env: NodeJS.ProcessEnv = process.env): Promise<number
+   const aloneness = createSilenceAlonenessSource({
+     activity: remoteAudioActivity,
+     windowMs: aloneSilenceWindowMs,
++    startupWindowMs: startupSilenceWindowMs,
+     onCaptureFault: () => restartCapture?.(),
+   });
+-  console.log(`[bot] aloneness: silence adapter + deaf-capture guard enabled (window_ms=${aloneSilenceWindowMs})`);
++  console.log(`[bot] aloneness: silence adapter + deaf-capture guard enabled (startup_window_ms=${startupSilenceWindowMs}, window_ms=${aloneSilenceWindowMs})`);
+   if (speakerStreamConfig) console.log(`[bot] speaker-stream tuning enabled: ${JSON.stringify(speakerStreamConfig)}`);
+ 
+   try {
+diff --git a/core/meetings/services/bot/src/join-driver.test.ts b/core/meetings/services/bot/src/join-driver.test.ts
+index c3e41918..03d61bd2 100644
+--- a/core/meetings/services/bot/src/join-driver.test.ts
++++ b/core/meetings/services/bot/src/join-driver.test.ts
+@@ -8,7 +8,7 @@
+  * Run: tsx src/join-driver.test.ts
+  */
+ import { AdmissionError, AuthSessionError, TeamsJoinRedirectError, TEAMS_AUTH_REDIRECT } from '@vexa/join';
+-import { admissionOutcomeToJoinOutcome } from './join-driver.js';
++import { admissionOutcomeToJoinOutcome, mapJoinState } from './join-driver.js';
+ import type { JoinOutcome } from './ports.js';
+ 
+ let passed = 0, failed = 0;
+@@ -23,6 +23,10 @@ const check = (name: string, cond: boolean) => {
+ const PERMANENT_OUTCOMES = new Set<JoinOutcome>(['rejected', 'auth_missing']);
+ 
+ console.log('\n=== join-driver: AdmissionError outcome → JoinOutcome (G1) ===');
++check('pre-lobby escalation never reports illegal joining -> needs_help', mapJoinState('needs_human_help', false) === null);
++check('pre-lobby block never invents awaiting_admission', mapJoinState('blocked', false) === null);
++check('real lobby escalation preserves legal needs_help', mapJoinState('needs_human_help', true) === 'needs_help');
++check('normal admission remains active', mapJoinState('admitted', false) === 'active');
+ 
+ check('denial → rejected (permanent, not retried)', admissionOutcomeToJoinOutcome('denial') === 'rejected');
+ check('lobby_timeout → timeout (transient retry)', admissionOutcomeToJoinOutcome('lobby_timeout') === 'timeout');
+diff --git a/core/meetings/services/bot/src/join-driver.ts b/core/meetings/services/bot/src/join-driver.ts
+index 54da9ccc..d0acfc7d 100644
+--- a/core/meetings/services/bot/src/join-driver.ts
++++ b/core/meetings/services/bot/src/join-driver.ts
+@@ -41,12 +41,12 @@ export function admissionOutcomeToJoinOutcome(outcome: AdmissionOutcome): JoinOu
+ }
+ 
+ /** @vexa/join JoinState → lifecycle.v1 BotStatus (null = not a bot-status transition). */
+-function mapState(s: JoinState): BotStatus | null {
++export function mapJoinState(s: JoinState, reachedLobby: boolean): BotStatus | null {
+   switch (s) {
+     case 'awaiting_admission': return 'awaiting_admission';
+     case 'admitted':           return 'active';
+     case 'blocked':
+-    case 'needs_human_help':   return 'needs_help';
++    case 'needs_human_help':   return reachedLobby ? 'needs_help' : null;
+     default:                   return null;   // 'joining'/'leaving' — orchestrator owns those
+   }
+ }
+@@ -129,7 +129,10 @@ export function createBrowserJoinDriver(
+               // callback latency rather than the platform's. Best-effort — a stopwatch fault must
+               // never interfere with the state report it accompanies.
+               try { if (s === 'awaiting_admission') timer.markLobby(); } catch { /* fail-open */ }
+-              const bs = mapState(s);
++              // The pinned FSM has no joining -> needs_help edge. Do not invent
++              // lobby evidence for a pre-lobby consent/unknown-state escalation.
++              // Auth redirects throw a permanent AdmissionError instead.
++              const bs = mapJoinState(s, timer.signals().reachedLobby === true);
+               if (bs) void report(bs);
+             },
+           },
+diff --git a/core/meetings/services/bot/src/pipeline.test.ts b/core/meetings/services/bot/src/pipeline.test.ts
+index 2613499e..fdfacd0c 100644
+--- a/core/meetings/services/bot/src/pipeline.test.ts
++++ b/core/meetings/services/bot/src/pipeline.test.ts
+@@ -163,16 +163,24 @@ async function main(): Promise<void> {
+   {
+     const realFetch = globalThis.fetch;
+     const modelParts: Array<string | null> = [];
++    const keytermParts: string[][] = [];
+     (globalThis as any).fetch = async (_url: unknown, init: { body: Buffer }) => {
+-      const m = Buffer.from(init.body).toString('latin1').match(/name="model"\r\n\r\n([^\r]*)\r\n/);
++      const body = Buffer.from(init.body).toString('latin1');
++      const m = body.match(/name="model"\r\n\r\n([^\r]*)\r\n/);
+       modelParts.push(m ? m[1] : null);
++      keytermParts.push([...body.matchAll(/name="keyterm"\r\n\r\n([^\r]*)\r\n/g)].map((match) => match[1]));
+       return new Response(JSON.stringify({ text: '', language: 'en', duration: 0.1, segments: [] }), { status: 200 });
+     };
+     const pcm = new Float32Array(1600).fill(0.05);
+-    await createTranscribe(baseInv({ transcriptionServiceUrl: 'http://stt.test', transcriptionModel: 'whisper-large-v3-turbo' }))(pcm);
++    await createTranscribe(baseInv({
++      transcriptionServiceUrl: 'http://stt.test', transcriptionModel: 'whisper-large-v3-turbo',
++      transcriptionKeyterms: ['MeetingLab', 'Hermes'],
++    }))(pcm);
+     await createTranscribe(baseInv({ transcriptionServiceUrl: 'http://stt.test' }))(pcm);
+     (globalThis as any).fetch = realFetch;
+     check('invocation.transcriptionModel rides the model form part', modelParts[0] === 'whisper-large-v3-turbo', JSON.stringify(modelParts[0]));
++    check('invocation.transcriptionKeyterms ride as repeated keyterm form parts',
++      JSON.stringify(keytermParts[0]) === JSON.stringify(['MeetingLab', 'Hermes']), JSON.stringify(keytermParts[0]));
+     check('no transcriptionModel → default whisper-1 (wire unchanged)', modelParts[1] === 'whisper-1', JSON.stringify(modelParts[1]));
+   }
+ 
+diff --git a/core/meetings/services/bot/src/pipeline.ts b/core/meetings/services/bot/src/pipeline.ts
+index c3ecfd9b..3556334e 100644
+--- a/core/meetings/services/bot/src/pipeline.ts
++++ b/core/meetings/services/bot/src/pipeline.ts
+@@ -422,6 +422,7 @@ export function createTranscribe(inv: Invocation): Transcribe {
+     serviceUrl: inv.transcriptionServiceUrl,
+     apiToken: inv.transcriptionServiceToken,
+     model: inv.transcriptionModel ?? undefined,
++    keyterms: inv.transcriptionKeyterms,
+   });
+   const language = inv.language ?? undefined;
+   return (pcm, prompt) => client.transcribe(pcm, language, prompt);
+diff --git a/core/meetings/services/bot/src/signal-upload.test.ts b/core/meetings/services/bot/src/signal-upload.test.ts
+index 28339cbe..cb90f115 100644
+--- a/core/meetings/services/bot/src/signal-upload.test.ts
++++ b/core/meetings/services/bot/src/signal-upload.test.ts
+@@ -88,6 +88,7 @@ console.log('\n── tape size cap ──');
+ }
+ {
+   check('cap default when env unset', resolveMaxTapeBytes(undefined) === DEFAULT_MAX_TAPE_BYTES);
++  check('cap default covers long meetings', DEFAULT_MAX_TAPE_BYTES === 1024 * 1024 * 1024);
+   // The .env.example failure class (v0.12.5): a set-but-EMPTY line must read as unset, not as 0 —
+   // and a garbled value must not read as "record without bound".
+   check('cap default when env empty', resolveMaxTapeBytes('') === DEFAULT_MAX_TAPE_BYTES);
+diff --git a/core/meetings/services/bot/src/signal-upload.ts b/core/meetings/services/bot/src/signal-upload.ts
+index d39095e1..ce8fa84a 100644
+--- a/core/meetings/services/bot/src/signal-upload.ts
++++ b/core/meetings/services/bot/src/signal-upload.ts
+@@ -54,8 +54,8 @@ export interface TapeUploadSummary {
+   skipped: TapePart[];
+ }
+ 
+-/** 60s: long enough for tens of MB on a slow link, short enough to sit inside the stop grace. */
+-export const DEFAULT_UPLOAD_TIMEOUT_MS = 60_000;
++/** A full 1 GiB safety-bounded tape can take several minutes to stream through meeting-api to R2. */
++export const DEFAULT_UPLOAD_TIMEOUT_MS = 300_000;
+ 
+ /** The STT round-trip tape the recorder writes beside the frame tape (telemetry.wrapTranscribeWithTap). */
+ export function sttTapePath(sessionPath: string): string {
+diff --git a/core/meetings/services/bot/src/telemetry.ts b/core/meetings/services/bot/src/telemetry.ts
+index 70506662..ac000f80 100644
+--- a/core/meetings/services/bot/src/telemetry.ts
++++ b/core/meetings/services/bot/src/telemetry.ts
+@@ -298,9 +298,10 @@ export interface RecorderOptions {
+ const DEFAULT_DIR = process.env.VEXA_CAPTURE_SIGNAL_DIR ?? '/tmp/captured-signal';
+ const DEFAULT_FLUSH_MS = 2000;
+ const DEFAULT_MAX_BUFFER = 1 << 20; // 1 MiB of pending JSONL
+-/** 250 MB ≈ an hour of tape at the observed ~4 MB/min. The pod's ephemeral-storage request is the
+- *  real bound; this keeps one pathological meeting from ever reaching it. */
+-export const DEFAULT_MAX_TAPE_BYTES = 250 * 1024 * 1024;
++/** 1 GiB covers roughly five hours at the observed per-speaker Google Meet rate while retaining a
++ *  hard safety bound for a wedged room. The former 250 MiB default truncated an ordinary 76-minute
++ *  multi-speaker capture before the conversation ended. */
++export const DEFAULT_MAX_TAPE_BYTES = 1024 * 1024 * 1024;
+ 
+ export function resolveMaxTapeBytes(
+   raw: string | undefined = process.env.VEXA_CAPTURE_SIGNAL_MAX_BYTES,
+diff --git a/core/meetings/services/meeting-api/src/meeting_api/bot_spawn/invocation.py b/core/meetings/services/meeting-api/src/meeting_api/bot_spawn/invocation.py
+index 07b1fa33..b4a4ca47 100644
+--- a/core/meetings/services/meeting-api/src/meeting_api/bot_spawn/invocation.py
++++ b/core/meetings/services/meeting-api/src/meeting_api/bot_spawn/invocation.py
+@@ -62,6 +62,56 @@ _RT_REGISTRY = Registry().with_resource(
+     _RUNTIME_SCHEMA["$id"], Resource.from_contents(_RUNTIME_SCHEMA)
+ )
+ 
++_MAX_TRANSCRIPTION_KEYTERMS = 100
++_MAX_TRANSCRIPTION_KEYTERM_LENGTH = 80
++_MAX_TRANSCRIPTION_KEYTERM_TOKENS = 500
++_TRANSCRIPTION_KEYTERM_STOP_WORDS = frozenset({
++    "a", "an", "and", "are", "as", "at", "be", "by", "for", "from", "in", "is",
++    "it", "of", "on", "or", "that", "the", "this", "to", "was", "we", "with", "you",
++})
++
++
++def normalize_transcription_keyterms(values: Any) -> Optional[list[str]]:
++    """Validate and normalize confidential per-meeting vocabulary without echoing values."""
++    if values is None:
++        return None
++    if not isinstance(values, list):
++        raise ValueError("transcription_keyterms must be an array of strings")
++    if len(values) > _MAX_TRANSCRIPTION_KEYTERMS:
++        raise ValueError(f"transcription_keyterms accepts at most {_MAX_TRANSCRIPTION_KEYTERMS} entries")
++
++    result: list[str] = []
++    seen: set[str] = set()
++    estimated_tokens = 0
++    for index, value in enumerate(values):
++        if not isinstance(value, str):
++            raise ValueError(f"transcription_keyterms entry {index} must be a string")
++        if any(ord(char) < 32 or ord(char) == 127 for char in value):
++            raise ValueError(f"transcription_keyterms entry {index} contains control characters")
++        term = " ".join(value.split())
++        if not term:
++            raise ValueError(f"transcription_keyterms entry {index} cannot be empty")
++        if len(term) < 2:
++            raise ValueError(f"transcription_keyterms entry {index} must contain at least 2 characters")
++        if len(term) > _MAX_TRANSCRIPTION_KEYTERM_LENGTH:
++            raise ValueError(
++                f"transcription_keyterms entry {index} exceeds {_MAX_TRANSCRIPTION_KEYTERM_LENGTH} characters"
++            )
++        folded = term.casefold()
++        if folded in _TRANSCRIPTION_KEYTERM_STOP_WORDS:
++            raise ValueError(f"transcription_keyterms entry {index} cannot be a common English stop word")
++        if folded in seen:
++            continue
++        next_tokens = estimated_tokens + max(1, (len(term) + 3) // 4)
++        if next_tokens > _MAX_TRANSCRIPTION_KEYTERM_TOKENS:
++            raise ValueError(
++                f"transcription_keyterms exceeds the {_MAX_TRANSCRIPTION_KEYTERM_TOKENS}-token vocabulary budget"
++            )
++        seen.add(folded)
++        estimated_tokens = next_tokens
++        result.append(term)
++    return result
++
+ 
+ def _conforms(obj: dict, schema: dict, registry: Registry, shape: str) -> None:
+     jsonschema.Draft202012Validator(
+@@ -151,6 +201,7 @@ def build_invocation(
+     transcription_service_url: Optional[str] = None,
+     transcription_service_token: Optional[str] = None,
+     transcription_model: Optional[str] = None,
++    transcription_keyterms: Optional[list[str]] = None,
+     authenticated: Optional[bool] = None,
+     userdata_s3_path: Optional[str] = None,
+     s3_endpoint: Optional[str] = None,
+@@ -163,6 +214,7 @@ def build_invocation(
+     ``None`` values are stripped (the parent strips them before serializing). The result is
+     validated against the sealed schema — a malformed invocation never ships.
+     """
++    transcription_keyterms = normalize_transcription_keyterms(transcription_keyterms)
+     invocation: dict[str, Any] = {
+         "platform": platform,
+         "meetingUrl": meeting_url,
+@@ -180,6 +232,7 @@ def build_invocation(
+         "transcriptionServiceUrl": transcription_service_url,
+         "transcriptionServiceToken": transcription_service_token,
+         "transcriptionModel": transcription_model,
++        "transcriptionKeyterms": transcription_keyterms,
+         "recordingEnabled": recording_enabled,
+         "captureModes": capture_modes,
+         # O-TEL-1 (sealed invocation.v1 field): tee the raw captured-signal.v1 stream to durable
+diff --git a/core/meetings/services/meeting-api/src/meeting_api/bot_spawn/router.py b/core/meetings/services/meeting-api/src/meeting_api/bot_spawn/router.py
+index 4423a00b..e5827374 100644
+--- a/core/meetings/services/meeting-api/src/meeting_api/bot_spawn/router.py
++++ b/core/meetings/services/meeting-api/src/meeting_api/bot_spawn/router.py
+@@ -37,7 +37,7 @@ from .ports import (
+     SpawnFailed,
+     TranscriptionNotConfigured,
+ )
+-from .invocation import SPAWNABLE_PLATFORMS
++from .invocation import SPAWNABLE_PLATFORMS, normalize_transcription_keyterms
+ from .service import (
+     DuplicateMeeting,
+     construct_meeting_url,
+@@ -444,6 +444,10 @@ def build_router(
+             )
+ 
+         transcribe_enabled = _resolve_transcribe_enabled(body.get("transcribe_enabled"))
++        try:
++            transcription_keyterms = normalize_transcription_keyterms(body.get("transcription_keyterms"))
++        except ValueError as exc:
++            raise HTTPException(status_code=422, detail=str(exc)) from exc
+ 
+         # THE NAME THIS PERSON'S BOT SHOWS UP AS — an explicit name on THIS request, and nothing
+         # else here. `request_bot` fills in this person's default from identity out of the bot
+@@ -465,6 +469,7 @@ def build_router(
+                 meeting_url=meeting_url,
+                 teams_base_host=teams_base_host,
+                 language=body.get("language"),
++                transcription_keyterms=transcription_keyterms,
+                 task=body.get("task"),
+                 transcription_tier=body.get("transcription_tier", "realtime"),
+                 recording_enabled=_resolve_recording_enabled(body.get("recording_enabled")),
+diff --git a/core/meetings/services/meeting-api/src/meeting_api/bot_spawn/service.py b/core/meetings/services/meeting-api/src/meeting_api/bot_spawn/service.py
+index 9336690f..40505f71 100644
+--- a/core/meetings/services/meeting-api/src/meeting_api/bot_spawn/service.py
++++ b/core/meetings/services/meeting-api/src/meeting_api/bot_spawn/service.py
+@@ -415,6 +415,7 @@ async def request_bot(
+     meeting_url: Optional[str] = None,
+     teams_base_host: Optional[str] = None,
+     language: Optional[str] = None,
++    transcription_keyterms: Optional[list[str]] = None,
+     task: Optional[str] = None,
+     transcription_tier: str = "realtime",
+     recording_enabled: bool = False,
+@@ -761,6 +762,7 @@ async def request_bot(
+         transcription_service_url=transcription_service_url,
+         transcription_service_token=transcription_service_token,
+         transcription_model=transcription_model,
++        transcription_keyterms=transcription_keyterms,
+         recording_enabled=recording_enabled,
+         capture_modes=(["audio", "video"] if recording_enabled else None),
+         # O-TEL-1: the tape is INDEPENDENT of recording_enabled — a meeting the user never asked to
+diff --git a/core/meetings/services/meeting-api/tests/test_bot_spawn.py b/core/meetings/services/meeting-api/tests/test_bot_spawn.py
+index f3e024d2..d893d317 100644
+--- a/core/meetings/services/meeting-api/tests/test_bot_spawn.py
++++ b/core/meetings/services/meeting-api/tests/test_bot_spawn.py
+@@ -120,6 +120,34 @@ def test_invocation_carries_stt_model_when_provided():
+     assert "transcriptionModel" not in build_invocation(**base)
+ 
+ 
++def test_invocation_carries_normalized_keyterms_without_duplicates():
++    token = mint_meeting_token(1, USER, "google_meet", "abc-defg-hij", secret=SECRET)
++    base = dict(meeting_id=1, platform="google_meet", meeting_url="https://meet.google.com/abc-defg-hij",
++                bot_name="VexaBot", token=token, native_meeting_id="abc-defg-hij",
++                connection_id="conn-1", redis_url="redis://redis:6379/0")
++    inv = build_invocation(
++        **base,
++        transcription_keyterms=[" MeetingLab ", "meetinglab", "Deepgram   Nova-3"],
++    )
++    conforms_invocation(inv)
++    assert inv["transcriptionKeyterms"] == ["MeetingLab", "Deepgram Nova-3"]
++    assert "transcriptionKeyterms" not in build_invocation(**base)
++
++
++@pytest.mark.parametrize("keyterms", [
++    [""], ["x"], ["a" * 81], ["bad\nterm"], ["the"], list(range(101)),
++])
++def test_invocation_rejects_invalid_keyterms_without_echoing_values(keyterms):
++    token = mint_meeting_token(1, USER, "google_meet", "abc-defg-hij", secret=SECRET)
++    base = dict(meeting_id=1, platform="google_meet", meeting_url="https://meet.google.com/abc-defg-hij",
++                bot_name="VexaBot", token=token, native_meeting_id="abc-defg-hij",
++                connection_id="conn-1", redis_url="redis://redis:6379/0")
++    with pytest.raises(ValueError) as exc:
++        build_invocation(**base, transcription_keyterms=keyterms)
++    if keyterms and isinstance(keyterms[0], str) and keyterms[0]:
++        assert keyterms[0] not in str(exc.value)
++
++
+ def test_workload_spec_conforms_to_runtime_v1():
+     inv = build_invocation(
+         meeting_id=1, platform="google_meet", meeting_url="https://meet.google.com/x",
+@@ -261,6 +289,41 @@ def test_post_bots_201(monkeypatch):
+     assert r.json()["status"] == "requested"
+ 
+ 
++def test_post_bots_threads_normalized_transcription_keyterms(monkeypatch):
++    monkeypatch.setenv("ADMIN_TOKEN", SECRET)
++    monkeypatch.setenv("TRANSCRIPTION_SERVICE_URL", "https://stt.vexa.ai")
++    repo, runtime = InMemoryMeetingRepo(), FakeRuntimeClient()
++    r = _client(repo, runtime).post(
++        "/bots", headers=HEADERS,
++        json={
++            "platform": "google_meet", "native_meeting_id": "keyterm-meeting",
++            "language": "en",
++            "transcription_keyterms": [" MeetingLab ", "meetinglab", "Alex   Example"],
++        },
++    )
++    assert r.status_code == 201, r.text
++    invocation = json.loads(runtime.specs[0]["env"]["VEXA_BOT_CONFIG"])
++    assert invocation["transcriptionKeyterms"] == ["MeetingLab", "Alex Example"]
++
++
++@pytest.mark.parametrize("keyterms", [
++    "MeetingLab", [""], ["x"], ["a" * 81], ["bad\nterm"], list(range(101)),
++])
++def test_post_bots_rejects_invalid_transcription_keyterms_before_spawn(keyterms):
++    runtime = FakeRuntimeClient()
++    r = _client(runtime=runtime).post(
++        "/bots", headers=HEADERS,
++        json={
++            "platform": "google_meet", "native_meeting_id": "invalid-keyterms",
++            "transcription_keyterms": keyterms,
++        },
++    )
++    assert r.status_code == 422
++    assert runtime.specs == []
++    if isinstance(keyterms, list) and keyterms and isinstance(keyterms[0], str) and keyterms[0]:
++        assert keyterms[0] not in r.text
++
++
+ def test_post_bots_forwards_automatic_leave_to_invocation(monkeypatch):
+     monkeypatch.setenv("ADMIN_TOKEN", SECRET)
+     monkeypatch.setenv("TRANSCRIPTION_SERVICE_URL", "https://stt.vexa.ai")

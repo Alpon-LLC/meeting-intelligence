@@ -1,0 +1,174 @@
+name: meeting-lab
+services:
+  redis:
+    image: valkey/valkey:8-alpine
+    networks: [vexa]
+    volumes: [redis:/data]
+    healthcheck: {test: [CMD, valkey-cli, ping], interval: 5s, timeout: 3s, retries: 20}
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${DB_NAME:?run setup_local.py init}
+      POSTGRES_USER: ${DB_USER:?run setup_local.py init}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?run setup_local.py init}
+    networks: [vexa]
+    volumes: [postgres:/var/lib/postgresql/data]
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  storage:
+    image: versity/versitygw:v1.8.0@sha256:30292fc2eeacc67a36993b01f7a7a5e3361a19cced0e80c1d71cfa2a4b0a2499
+    entrypoint: [/bin/sh, -c]
+    command: ['mkdir -p /store/data /store/iam && exec versitygw --port :9000 --health /health --iam-dir /store/iam --quiet posix /store/data']
+    environment:
+      ROOT_ACCESS_KEY: ${STORAGE_ACCESS_KEY:?run init}
+      ROOT_SECRET_KEY: ${STORAGE_SECRET_KEY:?run init}
+    volumes: [storage:/store]
+    networks: [vexa]
+  storage-init:
+    image: python:3.12-slim
+    entrypoint: [/bin/sh, -c]
+    command: ['pip install --no-cache-dir boto3==1.35.0 >/dev/null && python /tools/init_storage.py']
+    environment:
+      AWS_ACCESS_KEY_ID: ${STORAGE_ACCESS_KEY:?run init}
+      AWS_SECRET_ACCESS_KEY: ${STORAGE_SECRET_KEY:?run init}
+    volumes: ['./deploy:/tools:ro']
+    networks: [vexa]
+    depends_on: [storage]
+  transcription:
+    image: meeting-lab/transcription:0.12.28
+    environment:
+      MODEL_SIZE: ${STT_MODEL:-small}
+      DEVICE: cpu
+      COMPUTE_TYPE: int8
+      API_TOKEN: ${STT_TOKEN:?run init}
+    volumes: [models:/app/models]
+    networks: [vexa]
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 15s
+      timeout: 10s
+      retries: 40
+      start_period: 60s
+  admin-api:
+    image: vexaai/v012-admin-api:v0.12.28
+    environment: &database
+      DB_HOST: postgres
+      DB_PORT: '5432'
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      ADMIN_API_TOKEN: ${ADMIN_TOKEN:?run init}
+      INTERNAL_API_SECRET: ${INTERNAL_API_SECRET:?run init}
+    ports: ['127.0.0.1:${VEXA_ADMIN_PORT:-19058}:8001']
+    networks: [vexa]
+    depends_on:
+      postgres: {condition: service_healthy}
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+  runtime:
+    image: vexaai/v012-runtime:v0.12.28
+    group_add: ['${DOCKER_GID:-0}']
+    environment:
+      BROWSER_IMAGE: ${VEXA_BOT_IMAGE:?run init}
+      REDIS_URL: redis://redis:6379/0
+      INTERNAL_API_SECRET: ${INTERNAL_API_SECRET}
+      DOCKER_NETWORK: meeting-lab_vexa
+    volumes: ['/var/run/docker.sock:/var/run/docker.sock']
+    networks: [vexa]
+    depends_on:
+      redis: {condition: service_healthy}
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://localhost:8090/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+  meeting-api:
+    image: ${VEXA_MEETING_API_IMAGE:?run init}
+    environment:
+      <<: *database
+      ADMIN_TOKEN: ${ADMIN_TOKEN}
+      ADMIN_API_URL: http://admin-api:8001
+      REDIS_URL: redis://redis:6379/0
+      RUNTIME_API_URL: http://runtime:8090
+      DEFAULT_BOT_NAME: ${BOT_NAME:-Meeting Lab Bot}
+      TRANSCRIPTION_SERVICE_URL: http://transcription:8000/v1/audio/transcriptions
+      TRANSCRIPTION_SERVICE_TOKEN: ${STT_TOKEN}
+      TRANSCRIPTION_MODEL: whisper-1
+      TRANSCRIBE_ENABLED: 'true'
+      RECORDING_ENABLED: 'false'
+      BOT_AUTHENTICATED: 'true'
+      BOT_USERDATA_S3_PATH: userdata/demo-bot
+      BOT_S3_ENDPOINT: http://storage:9000
+      BOT_S3_BUCKET: userdata
+      BOT_S3_ACCESS_KEY: ${STORAGE_ACCESS_KEY}
+      BOT_S3_SECRET_KEY: ${STORAGE_SECRET_KEY}
+      AWS_DEFAULT_REGION: us-east-1
+      S3_ENDPOINT: http://storage:9000
+      S3_ACCESS_KEY: ${STORAGE_ACCESS_KEY}
+      S3_SECRET_KEY: ${STORAGE_SECRET_KEY}
+      MINIO_BUCKET: signal
+      VEXA_SYSTEM_WEBHOOK_URL: ''
+      VEXA_SYSTEM_WEBHOOK_SECRET: ''
+    networks: [vexa]
+    depends_on:
+      postgres: {condition: service_healthy}
+      redis: {condition: service_healthy}
+      runtime: {condition: service_healthy}
+      admin-api: {condition: service_healthy}
+      storage-init: {condition: service_completed_successfully}
+      transcription: {condition: service_healthy}
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://localhost:8080/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+  gateway:
+    image: vexaai/v012-gateway:v0.12.28
+    environment:
+      ADMIN_API_URL: http://admin-api:8001
+      MEETING_API_URL: http://meeting-api:8080
+      AGENT_API_URL: ''
+      REDIS_URL: redis://redis:6379/0
+      INTERNAL_API_SECRET: ${INTERNAL_API_SECRET}
+    ports: ['127.0.0.1:${VEXA_GATEWAY_PORT:-19056}:8000']
+    networks: [vexa]
+    depends_on:
+      meeting-api: {condition: service_healthy}
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+  login:
+    profiles: [login]
+    image: ${VEXA_BOT_IMAGE:?run init}
+    entrypoint: [/bin/bash, /tools/login.sh]
+    environment:
+      DISPLAY: ':99'
+      BOT_AUTHENTICATED: 'true'
+      BOT_USERDATA_S3_PATH: userdata/demo-bot
+      BOT_S3_ENDPOINT: http://storage:9000
+      BOT_S3_BUCKET: userdata
+      BOT_S3_ACCESS_KEY: ${STORAGE_ACCESS_KEY}
+      BOT_S3_SECRET_KEY: ${STORAGE_SECRET_KEY}
+      AWS_DEFAULT_REGION: us-east-1
+      LOGIN_TIMEOUT_MS: '1800000'
+    ports: ['127.0.0.1:16080:6080']
+    volumes: ['./deploy:/tools:ro', './private/auth-readiness:/auth-readiness']
+    networks: [vexa]
+    depends_on:
+      storage-init: {condition: service_completed_successfully}
+networks:
+  vexa:
+    name: meeting-lab_vexa
+volumes:
+  redis:
+  postgres:
+  storage:
+  models:

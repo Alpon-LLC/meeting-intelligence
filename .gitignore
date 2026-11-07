@@ -1,0 +1,11 @@
+# Runtime data and credentials must never be published.
+.env
+.env.*
+!.env.example
+private/
+.build/
+.venv/
+.hermes-venv/
+__pycache__/
+*.pyc
+*.log
