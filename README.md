@@ -2,6 +2,17 @@
 
 **Experimental port. Not yet live-certified on attendee devices.** This branch corrects the first draft's unnecessary Python-scheduler rewrite.
 
+## Workflow overview
+
+![Meeting intelligence workflow: Google Calendar through the JavaScript scheduler, self-hosted Vexa, transcript processing and Hermes finalization to Notion notes and Slack organizer review; a separate preparation branch delivers pre-call briefs.](docs/images/meeting-intelligence-workflow.png)
+
+The scheduler coordinates two paths:
+
+- **Before the call:** Hermes preparation builds type-aware context and attendee briefs for delivery to configured Slack destinations.
+- **Capture and follow-through:** self-hosted Vexa joins Google Meet; live and batch transcript processing produce canonical evidence; Hermes finalization prepares notes, decisions and proposed actions for the Notion meeting record and organizer review.
+
+Solid lines show capture/evidence, dashed lines show preparation, and amber marks human review. Task creation follows human approval; notes publication and recording consent are separate decisions. Notion and Slack outputs require explicit tenant configuration, and task writes remain disabled by default. This diagram describes the intended workflow, not a completed live-device certification. See the [architecture guide](docs/ARCHITECTURE.md) for implementation details and limits.
+
 ## Actual architecture
 
 ```text
