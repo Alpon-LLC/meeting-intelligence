@@ -2,6 +2,7 @@
   "name": "meeting-intelligence",
   "version": "0.2.0",
   "private": true,
+  "license": "MIT",
   "description": "Port of the original calendar scheduler: direct Vexa start, Hermes prep/finish webhooks",
   "scripts": {
     "start": "node scheduler/daemon.js",
