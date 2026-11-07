@@ -1,39 +1,41 @@
-# Paste this into Devin
+# Paste-ready Devin setup and repair prompt
 
 Repository: https://github.com/Alpon-LLC/meeting-intelligence
 
-## Goal and expected result
+Build and exercise this **original-workflow port** on my approved local development device. Read README, docs/ARCHITECTURE.md, docs/PORT.md, docs/PUBLIC-RUNTIME.md, docs/VERIFICATION.md, SECURITY and PRIVACY first. Inspect source, not only prose.
 
-Build and reproduce a local autonomous meeting assistant, not just a collection of healthy containers. My Calendar event should automatically send my uniquely named, signed-in Vexa bot into Google Meet, capture real consenting synthetic discussion, produce a Hermes draft, and publish reviewed notes to my own Notion page. The shared-room event lets attendees see whose scheduled bot joins first; do not assume multi-bot/account/device compatibility before rehearsing it.
+## Goal
 
-Read `docs/ARCHITECTURE.md` first. It contains the system diagram, component/file map, authentication boundaries, actual scheduler behavior, missing features and what I should see when finished. Read `docs/VERIFICATION.md` to separate existing offline evidence from untested live behavior. Inspect the code before running it; documentation describes intent, not proof.
+My own Calendar triggers a uniquely named authenticated Vexa bot into a consenting Google Meet, with agent-led preparation and post-meeting notes/review through Hermes webhooks. Preserve that system; do not replace the JS scheduler, collapse skills to stubs, remove Calendar or Notion to obtain a superficial pass, or replace agent webhooks with local CLI runs.
 
-## Scope and architecture
+## Exact architecture
 
-- Vexa services, database, queue, browser profile storage and CPU speech transcription run in my local Docker engine.
-- `setup.sh` is the setup entrypoint; `setup_local.py` provides individual steps. The build fetches exact upstream Vexa source and applies `patches/vexa.patch`; no company image/server is required.
-- `meeting_app.py run` is the long-running Calendar scheduler and Vexa lifecycle controller. It polls my Calendar, selects [record] events after explicit consent enablement and near their scheduled time, submits once, tracks exact bot ID and retrieves that occurrence's transcript.
-- The bot's Google browser login and Calendar API OAuth are separate human authorizations, even using one Google account. Calendar requires my own Desktop OAuth client and Calendar API enabled, not DWD/X.509.
-- An isolated Hermes instance generates summary.md through a generic skill. My model may be a paid external provider; disclose that egress/cost. Only approved publication writes to Notion. No task creation, Slack broadcast, custom dashboard or automatic rich prep briefing is included.
-- Original transcript, draft, state and receipts remain local under private/meetings. Credentials/profile/audio remain private; retention is not automatic.
+- `scheduler/run.js` is the real original JS scheduler port. `npm start` serializes ticks. Preserve its phase windows, owner/meeting filters, leases, receipts, deferred finish, review flags and recovery.
+- Start/join, status and stop call self-hosted Vexa directly. Context builder/preparer and direct worker retain the real helper algorithms.
+- Prep and finish go to signed loopback **Hermes webhooks**. They load the full original internal-meeting-prep and meeting-finalize chains, not the first draft's tiny skills.
+- Signed Vexa completion bridge materializes captured-signal evidence. Original postcall worker runs batch STT/canonical/readability; JS finish gate then sends the agent webhook.
+- Full generic skills retain classification/context gathering, Notion structure/attachments, organizer review, triage-context/retrieval, approved task reconciliation and optional Slack update. Configure tenant settings; never execute literal placeholder IDs or historical legacy provisioning commands.
+- `.build/vexa` is public upstream source at the exact commit plus patch. It is ignored, not a private/company repository dependency. Docker services are local; Hermes model provider may be external and paid.
 
-## Your assignment
+## Authority and privacy
 
-Install, exercise and repair this release candidate where necessary to achieve the defined result. Do not stop at producing a plan or passing mocked tests. You may make local code/doc fixes inside this checkout, add regression tests, and report the diff. Do not silently drop Calendar, authenticated Vexa or Notion to make the demo look green. If a real external prerequisite blocks you, identify the exact human action, preserve evidence and report partial completion honestly. Do not push fixes or publish images without approval.
+Work only in this checkout and its new isolated Hermes home/Docker stack. No production access, repository/image publication, pushes, merges, DNS/firewall changes, existing agent-profile changes or deletion of user data without explicit approval. Human supplies account grants, Google sign-in/MFA, credentials via private files/hidden prompts and recording consent. Never request passwords/MFA codes in chat or print tokens/env/real transcript content into public logs. Docker socket is host-privileged: explain and obtain authorization before using it. Do not disable approval safeguards globally.
 
-Set up this repository on my approved **local development environment**, not production. Read README, SECURITY, PRIVACY and provenance first. If your workspace cannot access my device/Docker engine, say so and guide me to execute the commands locally; do not claim cloud setup is local.
+Devin cloud workspace is not automatically my laptop. If you lack approved local access, say so and guide me to run local commands. Do not report cloud hosting as local reproduction.
 
-Do not publish/push code or images, use the authors' infrastructure, inspect unrelated credentials, change my existing Hermes profile, or execute cutover scripts. Use only generated local secrets and my own Google/Notion/model accounts. Keep secrets in the ignored private directory; never request passwords/MFA codes or dump environment variables. Ask before provisioning, installing system dependencies, paid model use, recording or external writes.
+## Execute
 
-1. Run the repository's offline tests. Record real results and failures.
-2. Run `setup_local.py init`, then doctor. Check supported OS/architecture/resources and Docker Compose v2. Do not pretend an unavailable daemon works.
-3. After my approval, install Python dependencies, fetch the pinned public Vexa source + patch, build local images and start Compose. Explain first build/model downloads. Verify all actual service health checks and report image IDs/source revisions. No pre-existing private image is required.
-4. Guide me through bootstrap and the local Google login browser. I sign in and handle MFA myself. Require the durable-login success receipt. Do not expose the localhost VNC port publicly.
-5. Install/configure the isolated Hermes instance using docs/HERMES.md. I choose and authorize my model provider and budget. Source activate.sh for scheduler/Hermes isolation.
-6. Guide me through my Google Cloud Desktop OAuth client and Calendar API authorization in docs/CALENDAR.md. No DWD/X.509. Explain that Vexa browser login and Calendar OAuth are separate grants.
-7. Guide me through creating a Notion integration and sharing my own test parent page. Run setup_local.py notion; I enter the token in the hidden prompt, not in this chat.
-8. Before live testing, ask me for organizer/participant recording and transcription consent and a controlled test event. Use synthetic discussion only. Give the bot my unique name, use [record] in the calendar title, enable consent and start the scheduler. Verify a single exact bot transitions requested → active with start_time → completed; verify actual spoken synthetic markers in the transcript. Do not blindly resubmit on timeout or admission failure.
-9. Verify Hermes produced grounded summary.md with decisions, proposed actions and uncertainties. Ask me to review it. Publish to my designated Notion page only after my explicit approval, then verify exact page readback. Do not create tasks or broadcast anything.
-10. Report commands, actual passes/failures, synthetic versus live evidence, unresolved manual steps and teardown state. A healthy container is not proof of capture. If Docker/login/API fails, preserve local evidence, explain the exact blocker, and use only the clearly labeled offline synthetic demo. Never fabricate a live pass.
+1. Record OS/CPU, Docker/Compose v2, Node22+, Python3.11+, resources and exact source refs. Run npm tests and Python port/helper suites; distinguish synthetic evidence from real services.
+2. After approval, use setup.sh or its explicit setup_local.py steps to generate private config, install Node/Python deps, fetch/apply reviewed Vexa patch, build images and start local Compose. Diagnose build/health failures; local code fixes and regression tests are allowed. Report diffs and actual outputs. Do not silently switch to a company image/server or Vexa Cloud.
+3. Bootstrap the local Vexa API user/key. Human signs into the browser at localhost:16080/vnc.html and handles MFA. Require confirmed durable profile upload. No unauthenticated/public VNC exposure.
+4. Install isolated Hermes with scripts/install_hermes.py. Human configures own model and budget. Configure full skills and signed routes using scripts/configure_runtime.py; preserve existing model settings and immediate redacted siblings. Inspect original route payload/dispatch contract and confirm gateway acceptance, not just port listening.
+5. Guide human through their own Google Cloud Calendar API/Desktop OAuth client and read-only grant, separately from Vexa browser login. No DWD/X.509. Configure actual calendar owner email. Do not bundle a shared event organizer's client secret.
+6. Configure own Notion integration/shared parent page. For original database/project/task enrichment, inspect exact configured schemas/data-source IDs; no all-zero IDs or guessed fields. Slack/email/CRM/task destinations are optional and require explicit grants/authorization. Configure public-runtime policy; do not blindly run historical internal fallbacks.
+7. Start isolated `hermes gateway run` and `npm start` in separate terminals. Use a dedicated synthetic meeting, unique bot display name, [record] marker and actual participant consent. For prep testing schedule 35 minutes ahead or use a clearly synthetic clock fixture; do not silently change production windows. Verify prep arrives via webhook, start directly creates one Vexa bot, exact provider ID transitions requested/joining to active with start time, and actual synthetic speech is captured.
+8. Verify stop/terminal state, signed completion, signal manifest integrity, batch/canonical/readability outputs and finish webhook. Require original full finalizer outputs, transcript-grounded decisions/proposed actions, uncertainty and organizer triage context. A healthy container or accepted POST is not capture.
+9. Show human the draft and exact Notion destination. Publish only as explicitly authorized; verify page/body/required attachment effects. Preserve pending review before task creation. Optional task adapter needs authenticated exact-actor/content authorization; if only prompt policy exists, leave tasks disabled and report that gap. No silent shared Slack/email/CRM actions.
+10. Report actual pass/fail/unproven stages, commands, refs/image IDs, manual actions, local fixes/tests, costs known/unknown and bot teardown. If a prerequisite blocks you, preserve artifacts and identify exact human action. Use labeled synthetic fallback only; never invent provider results or call partial success complete.
 
-Done means a real controlled calendar-triggered meeting produced the expected transcript, a Hermes draft, an approved Notion page, and verified bot teardown. If any step is unproven, say so. Do not announce/publicize the repo or promise other frameworks/platforms work.
+## Done looks like
+
+A real consented Calendar event triggers agent prep (when within prep window), one directly submitted authenticated bot, actual transcript evidence, signed durable completion, canonical/readable processing, a finish-agent draft/review context and an explicitly authorized verified Notion result. Scheduler duplicate/retry behavior is tested and the bot is terminal afterward. No legacy bot or Python scheduler substituted. No unapproved distribution/tasks. Any unproven stage is clearly listed, not hidden behind a success claim.

@@ -1,0 +1,42 @@
+"use strict";
+const assert = require("assert");
+const fs = require("fs");
+const os = require("os");
+const path = require("path");
+const { REJOIN_OVERRUN_GRACE_MS, filterRejoinOverrunMeetings, shouldStartVexaRejoin } = require("./vexa-rejoin");
+
+const root = fs.mkdtempSync(path.join(os.tmpdir(), "vexa-rejoin-js-"));
+const event = "event";
+const dir = path.join(root, event);
+fs.mkdirSync(dir);
+const payload = { id: event, end: "2026-10-16T10:00:00Z" };
+const now = Date.parse("2026-10-16T09:20:00Z");
+fs.writeFileSync(path.join(dir, "vexa.lifecycle.json"), JSON.stringify({ meeting: { id: 33, status: "completed", completion_reason: "left_alone" } }));
+assert.equal(shouldStartVexaRejoin(root, payload, now).reason, "capture-not-preserved");
+fs.writeFileSync(path.join(dir, ".vexa-postcall.json"), JSON.stringify({ status: "completed" }));
+assert.equal(shouldStartVexaRejoin(root, payload, now).reason, "early-left-alone");
+assert.equal(shouldStartVexaRejoin(root, payload, Date.parse(payload.end)).reason, "left-alone-after-end");
+fs.writeFileSync(path.join(dir, "notion-page.json"), "{}");
+assert.equal(shouldStartVexaRejoin(root, payload, now).reason, "publication-exists-needs-review");
+fs.unlinkSync(path.join(dir, "notion-page.json"));
+fs.writeFileSync(path.join(dir, ".vexa-rejoin.json"), JSON.stringify({ status: "dispatched", handled_meeting_ids: ["33"] }));
+assert.equal(shouldStartVexaRejoin(root, payload, now).reason, "rejoin-bounded");
+fs.writeFileSync(path.join(dir, ".vexa-rejoin.json"), JSON.stringify({ status: "dispatch_pending", handled_meeting_ids: ["33"] }));
+assert.equal(shouldStartVexaRejoin(root, payload, now).reason, "dispatch-pending");
+assert.equal(shouldStartVexaRejoin(root, payload, Date.parse(payload.end)).reason, "left-alone-after-end");
+fs.unlinkSync(path.join(dir, ".vexa-rejoin.json"));
+fs.writeFileSync(path.join(dir, "vexa.lifecycle.json"), JSON.stringify({ meeting: { id: 34, status: "completed", completion_reason: "evicted" } }));
+assert.equal(shouldStartVexaRejoin(root, payload, Date.parse(payload.end) + 60_000).reason, "unexpected-eviction");
+assert.equal(shouldStartVexaRejoin(root, payload, Date.parse(payload.end) + REJOIN_OVERRUN_GRACE_MS).reason, "rejoin-window-ended");
+const overrunEvent = { id: event, end: { dateTime: payload.end } };
+assert.equal(filterRejoinOverrunMeetings([overrunEvent], Date.parse(payload.end) + 60_000).length, 1);
+assert.equal(filterRejoinOverrunMeetings([overrunEvent], Date.parse(payload.end) + REJOIN_OVERRUN_GRACE_MS).length, 0);
+
+let skipped = JSON.stringify({ status: "skipped", reason: "room-dormant-no-rejoin" });
+fs.writeFileSync(path.join(dir, ".vexa-rejoin.json"), skipped);
+assert.equal(shouldStartVexaRejoin(root, payload, now).start, false);
+assert.equal(shouldStartVexaRejoin(root, payload, now).reason, "room-dormant-no-rejoin");
+fs.unlinkSync(path.join(dir, ".vexa-rejoin.json"));
+
+fs.rmSync(root, { recursive: true, force: true });
+console.log("PASS bounded Vexa early-left/eviction overrun rejoin inspection");

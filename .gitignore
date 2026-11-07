@@ -9,3 +9,4 @@ private/
 __pycache__/
 *.pyc
 *.log
+node_modules/

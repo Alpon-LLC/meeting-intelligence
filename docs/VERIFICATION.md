@@ -1,26 +1,28 @@
-# Verification of local release candidate
+# Verification: original JS/skill port
 
-## Actually exercised
+This supersedes the first draft's Python-scheduler verification as evidence for the advertised runtime.
 
-- Wrote tests before implementing new scheduler/setup behavior; initial workflow/setup suites failed because implementations were absent. Additional unknown-submission ownership regression failed then passed after correction.
-- `python -m unittest discover -s tests -v`: 18 passing tests, including real localhost HTTP roundtrip against a synthetic provider, exact bot identity, consent/window selection, one submission, unknown-outcome no-retry, stop-at-end, empty-transcript wait, partial-capture summary refusal, Notion approval/receipt dedup and safe path handling.
-- `python scripts/offline_demo.py`: PASS, explicitly synthetic scheduling/transcript replay. No paid provider/model calls.
-- Docker Compose v2.39.4 `config --quiet` against temporary generated credentials: exit 0. No credentials printed or committed.
-- Public Vexa source fetched at f1a62fbbdfd2c98cb162582d82c31fe8102acc89. Original patch and generic-fixture patch both pass `git apply --check` on that source. Original applied tree `git diff --check` passed.
-- Python syntax compilation and Bash syntax checks passed.
-- Limited export scan found no matched private company email/domain/host path, listed credential patterns or company references in generic skills. This is not a complete security clearance.
-- Exact-version PyPI metadata verified for the two declared direct Python dependencies; upstream Vexa/Hermes license texts retrieved at selected commits.
+## Executed
 
-## Not exercised / release blockers
+- `npm test`: nine JS test programs passed. Includes retained original dispatch-lease, concurrency, executor-receipt, review-flag, Vexa finish/rejoin tests, plus public routing structure, direct exact-ID status/single-stop and real localhost signed prep-webhook transport/duplicate suppression.
+- Python original auto-join helper suite: 15 tests passed.
+- Python original finalizer/helper suite: 49 tests passed.
+- Public port/runtime installation suite: 3 tests passed, including full skill bodies, HTTP-only endpoint behavior, actual installed agent routes and private/redacted configuration generation.
+- Python source compilation passed for exported scripts; Node source syntax checked. Compose configuration validation is re-run against generated temporary secrets.
+- Original Vexa patch applicability was checked against the exact public base; generic fixture patch applicability passed in the earlier build step.
 
-- Docker client exists but daemon/socket is not available inside this build container. Docker image builds, image architecture availability and service boot were NOT run. Compose plugin was downloaded only to a separate cache for configuration validation.
-- Local Google login, durable session restore, Calendar consent/token refresh, actual Vexa admission/audio, local Whisper compatibility/performance and multiple attendees' same-room bots: NOT tested.
-- Fresh isolated Hermes install/model summary and live approved Notion publication: NOT tested. Their subprocess/API paths exist but offline tests are not substitutes for real provider validation.
-- No claim of source equivalence to an existing production bot image; this candidate rebuilds from reviewed source + patch.
-- The candidate simplifies production: exact-ID transcript polling and local Whisper/storage replace the private router, remote store, second pass and signed callback pipeline. This new path needs a controlled end-to-end rehearsal.
-- Full transitive lock/SBOM, image vulnerability/license inventory, rights-holder license approval and public release review remain required.
-- Initial verification was local. Repository publication is separately authorized; no image publication, production change or real meeting test was performed.
+Original tests changed only for documented public contracts: explicit overall lease timeout, direct HTTP instead of removed private SSH path, configured synthetic domains, header-only capture fixture safety, and finish-agent routing rather than internal deterministic publisher. See PORT.md.
 
-## Required next rehearsal
+## Source coverage
 
-On an owner-approved disposable local Docker engine: run setup, build images, verify every service, authorize human Google browser login and separate Calendar OAuth, configure isolated Hermes/model and test Notion parent, then run a consenting synthetic calendar event. Verify bot requested → active/start time → completed, actual speech markers in transcript, grounded local draft, explicitly approved Notion page readback and provider teardown. Record costs, resources, host OS/architecture and each failed/manual step. Fix failures before announcing one-shot attendee reproduction.
+PORT-MANIFEST.json records 275 copied/excluded source records: 66 skill-family files initially exported, 199 private reference narratives excluded, ten scheduler source files ported as base. Additional runtime contracts, status helper and tests were added. The complete main skill bodies and operational scripts are preserved; private incident narratives are not automatically public content. Their absence is explicit, not a claim every original byte was exported.
+
+## Not executed
+
+No Docker daemon in authoring container: images not built, stack not started. No actual Google sign-in, Calendar OAuth grant, live Vexa meeting/capture, multi-bot race, full gateway/model workflow, real Notion/Slack/email/task write or provider teardown was exercised. Localhost webhook tests use a synthetic HTTP server, not a real Hermes model session.
+
+The selected Hermes gateway version, browser authentication on attendee hardware, local STT compatibility/latency and completion materialization remain real release gates. Public-runtime overrides need human review against retained internal procedure assumptions. No claim of faithful deployed image equivalence or fully operational one-shot installer is made.
+
+## Security limits
+
+Targeted export scans remove known company domains/names/IDs, credential-like assignments and private source/endpoint references. No regex scan proves all secrets, customer details or proprietary prompts are cleared. Historical references are excluded by default. Keep all runtime private data ignored; no credentials are in test reports. Preserve upstream licenses and obtain owner rights approval. Public publication is authorized, not a legal or security certification.

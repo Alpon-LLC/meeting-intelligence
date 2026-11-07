@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "${CONFIGURED_SOURCE_URL}",
+  "title": "meeting-stt-context.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "meeting_id", "language", "generated_at", "keyterms", "canonical_entities", "source_fingerprints"],
+  "properties": {
+    "version": {"const": "meeting-stt-context.v1"},
+    "meeting_id": {"type": "string", "minLength": 1, "maxLength": 255},
+    "language": {"const": "en"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "keyterms": {
+      "type": "array",
+      "maxItems": 100,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["text", "source", "priority"],
+        "properties": {
+          "text": {"type": "string", "minLength": 2, "maxLength": 80, "pattern": "^[^\\u0000-\\u001F\\u007F]+$"},
+          "source": {"enum": ["calendar_attendee", "external_organization", "project", "organization", "product", "human_correction", "agenda"]},
+          "priority": {"type": "integer", "minimum": 0, "maximum": 100}
+        }
+      }
+    },
+    "canonical_entities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["people", "organizations", "products"],
+      "properties": {
+        "people": {"type": "array", "items": {"type": "string"}},
+        "organizations": {"type": "array", "items": {"type": "string"}},
+        "products": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "source_fingerprints": {
+      "type": "object",
+      "additionalProperties": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+    }
+  }
+}

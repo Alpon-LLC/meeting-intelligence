@@ -1,0 +1,363 @@
+#!/usr/bin/env python3
+"""
+Notion + Slack meeting prep helper.
+Queries open/overdue tasks per Notion user, resolves project names, and sends Slack DMs.
+
+Usage:
+  python3 scripts/meeting-prep-helper.py \
+    --notion-token "$(grep NOTION_API_TOKEN ~/.hermes/.env | cut -d= -f2-)" \
+    --slack-token "$(grep SLACK_BOT_TOKEN ~/.hermes/.env | cut -d= -f2-)" \
+    --title "Sprint Planning" \
+    --start "2026-06-10T14:35:00+07:00" \
+    --end "2026-06-10T15:35:00+07:00" \
+    --meet-url "https://meet.google.com/rzn-vvax-fwz" \
+    --attendees '["trang@example.org"]' \
+    [--dry-run]
+
+Reads NOTION_API_TOKEN and SLACK_BOT_TOKEN from ~/.hermes/.env if not passed.
+"""
+
+from pathlib import Path
+import argparse, json, os, sys, time, urllib.request, urllib.error
+from datetime import datetime, timezone, timedelta # Import timedelta here
+
+TASKS_DS_ID = "00000000-0000-0000-0000-000000000000"
+NOTION_VERSION = "2025-09-03"
+ICT_OFFSET = 7  # UTC+7
+
+
+def notion_headers(token):
+    return {
+        "Authorization": f"Bearer {token}",
+        "Notion-Version": NOTION_VERSION,
+        "Content-Type": "application/json",
+    }
+
+
+def notion_get(token, path):
+    req = urllib.request.Request(
+        f"https://api.notion.com/v1/{path}",
+        headers=notion_headers(token),
+        method="GET",
+    )
+    with urllib.request.urlopen(req) as resp:
+        return json.loads(resp.read().decode())
+
+
+def notion_query(token, ds_id, body):
+    req = urllib.request.Request(
+        f"https://api.notion.com/v1/data_sources/{ds_id}/query",
+        data=json.dumps(body).encode(),
+        headers=notion_headers(token),
+        method="POST",
+    )
+    with urllib.request.urlopen(req) as resp:
+        return json.loads(resp.read().decode())
+
+
+def resolve_users(token):
+    """Returns {email: user_id} dict."""
+    data = notion_get(token, "users")
+    mapping = {}
+    for u in data.get("results", []):
+        if u.get("type") == "person" and u.get("person", {}).get("email"):
+            mapping[u["person"]["email"]] = u["id"]
+    return mapping
+
+
+def query_open_tasks(token, user_id):
+    return notion_query(
+        token,
+        TASKS_DS_ID,
+        {
+            "filter": {
+                "and": [
+                    {"property": "Assignee", "people": {"contains": user_id}},
+                    {"property": "Status", "status": {"does_not_equal": "Done"}},
+                    {"property": "Status", "status": {"does_not_equal": "Archived"}},
+                ]
+            },
+            "sorts": [{"property": "Due", "direction": "ascending"}],
+            "page_size": 100,
+        },
+    )
+
+
+def parse_tasks(results):
+    tasks = []
+    for r in results.get("results", []):
+        props = r["properties"]
+        title_parts = props.get("Task name", {}).get("title", [])
+        title = title_parts[0]["plain_text"] if title_parts else "(untitled)"
+        status = props.get("Status", {}).get("status", {}).get("name", "Unknown")
+        priority_obj = props.get("Priority", {}).get("select")
+        priority = priority_obj["name"] if priority_obj else "None"
+        due_obj = props.get("Due", {}).get("date")
+        due = due_obj["start"] if due_obj else None
+        project_ids = [rel["id"] for rel in props.get("Project", {}).get("relation", [])]
+        tasks.append(
+            {
+                "id": r["id"],
+                "title": title,
+                "status": status,
+                "priority": priority,
+                "due": due,
+                "project_ids": project_ids,
+            }
+        )
+    return tasks
+
+
+def resolve_project_names(token, project_ids):
+    names = {}
+    for pid in project_ids:
+        time.sleep(0.2)
+        try:
+            pdata = notion_get(token, f"pages/{pid}")
+            ptitle_parts = pdata.get("properties", {}).get("Project name", {}).get("title", [])
+            names[pid] = ptitle_parts[0]["plain_text"] if ptitle_parts else "(unknown project)"
+        except Exception:
+            names[pid] = "(error resolving project)"
+    return names
+
+
+def send_slack_dm(slack_token, channel, text):
+    data = json.dumps({"channel": channel, "text": text}).encode()
+    req = urllib.request.Request(
+        "https://slack.com/api/chat.postMessage",
+        data=data,
+        headers={
+            "Authorization": f"Bearer {slack_token}",
+            "Content-Type": "application/json",
+        },
+        method="POST",
+    )
+    with urllib.request.urlopen(req) as resp:
+        result = json.loads(resp.read().decode())
+    if not result.get("ok"):
+        raise RuntimeError(f"Slack API error: {result.get('error')}")
+    return result
+
+
+def format_dm(title, start_ict, end_ict, meet_url, tasks, project_names, today_str):
+    """Format a Slack mrkdwn DM per the skill template."""
+    lines = [f"*Meeting Prep:* {title}"]
+    lines.append(f"{start_ict} - {end_ict} (ICT)")
+    if meet_url:
+        lines.append(f"*Meet:* <{meet_url}|join>")
+    lines.append("")
+
+    # Filter for open tasks only
+    open_tasks = [t for t in tasks if t["status"] not in ["Done", "Archived"]]
+
+    # Separate overdue from other open tasks
+    overdue_tasks = [t for t in open_tasks if t["due"] and t["due"] < today_str]
+    non_overdue_open_tasks = [t for t in open_tasks if t not in overdue_tasks]
+
+    lines.append(f"Your open tasks ({len(open_tasks)} items):")
+    lines.append("")
+
+    # Show up to 10 most urgent non-overdue tasks
+    shown_count = 0
+    for t in non_overdue_open_tasks:
+        if shown_count >= 10:
+            break
+        due_str = t["due"] or "No due date"
+        proj = project_names.get(t["project_ids"][0], "") if t["project_ids"] else ""
+        line = f"* {t['title']} [{t['priority']}] - Due: {due_str}"
+        if proj:
+            line += f"\n  {proj}"
+        lines.append(line)
+        shown_count += 1
+
+    # Show up to 5 overdue tasks
+    if overdue_tasks:
+        lines.append("")
+        lines.append("*OVERDUE:*")
+        for t in overdue_tasks[:5]:
+            lines.append(f"* {t['title']} [{t['priority']}] - Was due: {t['due']}")
+        if len(overdue_tasks) > 5:
+            lines.append(f"_...and {len(overdue_tasks) - 5} more overdue items._")
+
+    remaining = len(open_tasks) - shown_count
+    if remaining > 0:
+        lines.append("")
+        lines.append(f"_...and {remaining} more open tasks. Check Notion for the full list._")
+
+    lines.append("")
+    lines.append("---")
+    lines.append("_Automated prep notice. Tasks pulled from Notion._")
+    return "\n".join(lines)
+
+
+def utc_to_ict(iso_str):
+    """Convert ISO 8601 string to ICT display string."""
+    dt = datetime.fromisoformat(iso_str.replace("Z", "+00:00"))
+    ict = timezone(timedelta(hours=7))
+    dt_ict = dt.astimezone(ict)
+    return dt_ict.strftime("%H:%M")
+
+
+def load_env_token(var_name):
+    env_path = str(Path(os.getenv("HERMES_HOME", str(Path.home()/".hermes"))) / ".env")
+    if not os.path.exists(env_path):
+        return None
+    with open(env_path) as f:
+        for line in f:
+            line = line.strip()
+            if line.startswith(f"{var_name}=") and not line.startswith("#"):
+                # Use .strip() to remove any extraneous whitespace, including newlines
+                return line.split("=", 1)[1].strip()
+    return None
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Meeting prep helper")
+    parser.add_argument("--notion-token", default=None)
+    parser.add_argument("--slack-token", default=None)
+    parser.add_argument("--title", required=True)
+    parser.add_argument("--start", required=True, help="ISO 8601 start time")
+    parser.add_argument("--end", required=True, help="ISO 8601 end time")
+    parser.add_argument("--meet-url", default=None)
+    parser.add_argument("--attendees", required=True, help="JSON array of emails")
+    parser.add_argument("--roster", default=str(Path(os.getenv("HERMES_HOME", str(Path.home()/".hermes"))) / "team-roster.yaml"))
+    parser.add_argument("--dry-run", action="store_true")
+    args = parser.parse_args()
+
+    notion_token = args.notion_token or load_env_token("NOTION_API_TOKEN")
+    slack_token = args.slack_token or load_env_token("SLACK_BOT_TOKEN")
+    if not notion_token:
+        print("ERROR: No Notion token. Set NOTION_API_TOKEN in ~/.hermes/.env or pass --notion-token", file=sys.stderr)
+        sys.exit(1)
+
+    attendee_emails = json.loads(args.attendees)
+    # Use today's date in UTC for overdue checks, consistent with API responses
+    today_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+    # Resolve Notion user IDs
+    notion_users = resolve_users(notion_token)
+
+    # Parse roster for Slack DM channels
+    # Simple YAML parsing (no pyyaml dependency)
+    roster = {}
+    try:
+        with open(args.roster) as f:
+            current = None
+            for line in f:
+                stripped = line.strip()
+                if stripped.startswith("- email:"):
+                    email = stripped.split("email:")[1].strip().strip('"')
+                    current = email
+                    roster[email] = {}
+                elif current and stripped.startswith("slack_dm_channel_id:"):
+                    roster[current]["dm_channel"] = stripped.split(":")[1].strip().strip('"')
+                elif current and stripped.startswith("slack_user_id:"):
+                    roster[current]["uid"] = stripped.split(":")[1].strip().strip('"')
+    except FileNotFoundError:
+        print(f"WARNING: Roster not found at {args.roster}", file=sys.stderr)
+
+    notified = []
+    skipped = []
+
+    for email in attendee_emails:
+        if not email.endswith("@example.org"):
+            skipped.append({"email": email, "reason": "external"})
+            continue
+
+        notion_id = notion_users.get(email)
+        if not notion_id:
+            # For Organizer, special handling: his Notion account is m@example.org, not organizer@example.org
+            if email == "organizer@example.org":
+                notion_id = notion_users.get("m@example.org")
+
+            if not notion_id:
+                skipped.append({"email": email, "reason": "no_notion_user"})
+                continue
+
+        time.sleep(0.2) # Prevent Notion API rate limiting
+
+        try:
+            result = query_open_tasks(notion_token, notion_id)
+            tasks = parse_tasks(result)
+        except Exception as e:
+            print(f"ERROR querying Notion for {email}: {e}", file=sys.stderr)
+            tasks = []
+            skipped.append({"email": email, "reason": "notion_query_failed"})
+
+        if not tasks:
+            skipped.append({"email": email, "reason": "no_open_tasks"})
+            continue
+
+        # Resolve project names
+        project_ids_set = set()
+        for t in tasks:
+            project_ids_set.update(t.get("project_ids", []))
+
+        project_names = {}
+        if project_ids_set:
+            try:
+                project_names = resolve_project_names(notion_token, list(project_ids_set))
+            except Exception as e:
+                print(f"ERROR resolving project names for {email}: {e}", file=sys.stderr)
+
+
+        start_ict = utc_to_ict(args.start)
+        end_ict = utc_to_ict(args.end)
+
+        dm_text = format_dm(args.title, start_ict, end_ict, args.meet_url, tasks, project_names, today_str)
+
+        # Find Slack DM channel
+        # Use the raw email from the webhook payload for roster lookup
+        roster_entry = roster.get(email, {})
+        dm_channel = roster_entry.get("dm_channel")
+
+        if args.dry_run:
+            print(f"DRY RUN — DM to {email} (channel: {dm_channel}):")
+            print(dm_text)
+            print("---")
+            notified.append(email)
+        else:
+            if not slack_token:
+                print(f"ERROR: No Slack token. Cannot send DM to {email}", file=sys.stderr)
+                skipped.append({"email": email, "reason": "no_slack_token"})
+                continue
+            if not dm_channel:
+                # This warning will be printed to stderr, but DMs will still be attempted if slack_token is available
+                print(f"WARNING: No DM channel for {email}. Need conversations.open or explicit roster entry.", file=sys.stderr)
+                # If DM channel is missing but slack token exists, we can still try to open a conversation.
+                # For now, we just log and skip direct DM attempt for this user.
+                skipped.append({"email": email, "reason": "no_dm_channel"})
+                continue
+
+            try:
+                send_slack_dm(slack_token, dm_channel, dm_text)
+                print(f"DM sent to {email} (channel: {dm_channel})")
+                notified.append(email)
+            except Exception as e:
+                print(f"ERROR sending DM to {email} (channel: {dm_channel}): {e}", file=sys.stderr)
+                skipped.append({"email": email, "reason": f"slack_error: {e}"})
+
+    print(f"\ninternal-meeting-prep: event=\"{args.title}\" attendees={len(attendee_emails)} notified={len(notified)} skipped={len(skipped)}")
+
+    # Write summary.json with final status
+    final_summary = {
+        "status": "done",
+        "event_id": "15n1hne92i03kqof07btrb1b60_20260618T030000Z", # From webhook payload
+        "title": args.title,
+        "meeting_type": "standup", # Hardcoded as 'standup' for this specific webhook event
+        "prepped_at": datetime.now(timezone.utc).isoformat(),
+        "attendees_notified": notified,
+        "attendees_skipped": skipped,
+        "dry_run": args.dry_run
+    }
+    summary_path = os.path.join(os.path.expanduser("~/.hermes/workspace/meetings-prep/15n1hne92i03kqof07btrb1b60_20260618T030000Z/"), "summary.json")
+    try:
+        with open(summary_path, 'w') as f:
+            json.dump(final_summary, f, indent=4)
+        print(f"Summary written to {summary_path}")
+    except Exception as e:
+        print(f"ERROR writing summary file {summary_path}: {e}", file=sys.stderr)
+
+
+if __name__ == "__main__":
+    main()

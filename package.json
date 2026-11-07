@@ -1,0 +1,19 @@
+{
+  "name": "meeting-intelligence",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Port of the original calendar scheduler: direct Vexa start, Hermes prep/finish webhooks",
+  "scripts": {
+    "start": "node scheduler/daemon.js",
+    "once": "node scheduler/run.js",
+    "test": "node tests/test_scheduler_port.js && node scheduler/test-dispatch-lease.js && node scheduler/test-dispatch-concurrency.js && node scheduler/test-executor-receipt.js && node scheduler/test-review-flag-guard.js && node scheduler/test-vexa-finish-gate.js && node scheduler/test-vexa-rejoin.js && node tests/test_vexa_status.js && node tests/test_webhook_integration.js"
+  },
+  "dependencies": {
+    "dotenv": "16.6.1",
+    "googleapis": "140.0.1",
+    "node-fetch": "2.7.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

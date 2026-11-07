@@ -1,117 +1,98 @@
-# Meeting Lab: Hermes + self-hosted Vexa
+# Meeting Intelligence: the original workflow, generalized
 
-A local meeting-intelligence building-session project: your Calendar schedules a named Google Meet bot, Vexa transcribes, Hermes drafts notes, and you review before publishing to your Notion page.
+**Experimental port. Not yet live-certified on attendee devices.** This branch corrects the first draft's unnecessary Python-scheduler rewrite.
 
-**Experimental release candidate, not live-certified.** Offline tests and patch application are exercised. Docker build/start, Google browser login, Calendar OAuth and live Notion/model calls still need a clean-machine rehearsal. Do not announce one-shot success yet.
+## Actual architecture
+
+```text
+Google Calendar OAuth
+  -> scheduler/run.js (original JS scheduler, every 2 minutes)
+     prep:   signed POST -> Hermes meeting-prep webhook -> internal-meeting-prep skill
+     start:  direct Vexa worker -> context/preparer -> self-hosted Vexa POST /bots
+     status/stop: direct exact-bot-ID Vexa API
+
+Vexa authenticated bot -> Meet audio + live STT + captured signal
+  -> original signed completion bridge -> local lifecycle/signal manifests
+  -> original postcall worker -> batch STT -> canonical transcript -> optional AI readability
+  -> JS finish gate -> signed POST -> Hermes meeting-finished webhook
+  -> meeting-finalize -> Notion notes/transcript attachment -> organizer review/context
+  -> optional approved task reconciliation and team update
+```
+
+**No local Hermes chat replacement.** Prep/finish use the existing agent webhook mechanism. Join/status/stop call Vexa directly. The actual original JS time windows, dispatch leases, executor receipts, deferred finalization, review flags and bounded-rejoin inspection are retained.
 
 ## Start here
 
-- [System architecture and finished experience](docs/ARCHITECTURE.md): how the pieces connect, entrypoints and what success looks like.
-- [Paste-ready Devin build/setup prompt](docs/DEVIN.md): goal, architecture, permitted fixes, human setup and live acceptance.
-- [What has actually been verified](docs/VERIFICATION.md): tests versus remaining live checks.
+- [Architecture and file map](docs/ARCHITECTURE.md)
+- [Devin setup/repair prompt](docs/DEVIN.md)
+- [Port audit and exact retained/changed behavior](docs/PORT.md)
+- [Per-file extraction manifest](docs/PORT-MANIFEST.json)
+- [Verification and live gaps](docs/VERIFICATION.md)
 
-## What you get
+## Files
 
-- A specific public Vexa revision plus a source patch; no duplicate Vexa codebase committed here.
-- Local Docker services: authenticated Vexa, database, queue, object storage and CPU speech-to-text.
-- Your own Google account signs into the bot browser. Separate ordinary Calendar OAuth reads only your selected calendar. No Workspace admin, DWD, X.509 or company infrastructure.
-- A deterministic scheduler watches only meetings marked `[record]`, starts one bot near the scheduled time, polls the exact bot ID, and saves original transcript evidence.
-- A separate Hermes instance generates a local draft. Notion publication requires explicit approval. No automatic tasks or Slack broadcasts.
-- Generic prep, summary and review skills. No company roster, customer vocabulary, private database IDs or internal incident history.
+- `setup.sh` / `setup_local.py`: local setup, builds, Google bot login and account configuration.
+- `scheduler/run.js`: **the ported production JS scheduler**, one tick. `scheduler/daemon.js` runs serial ticks.
+- `scheduler/dispatch-lease.js`, `executor-receipt.js`: original concurrency/lease/receipt contracts.
+- `scheduler/vexa-*`: direct start/status/stop, completion readiness, postcall and recovery workers.
+- `skills/`: full generalized original meeting family, not miniature replacement prompts. Main skills retain hundreds of lines, operational stages and helper algorithms. Each begins with a public runtime contract resolving tenant settings and historical legacy-only paths.
+- `deploy/bridge.py`: recovered signed Vexa completion bridge. It materializes evidence; the JS scheduler sends the finish-agent webhook only after postcall readiness.
+- `patches/vexa.patch`: reviewed Vexa modifications against exact public upstream source; generic synthetic fixtures.
+- `scripts/configure_runtime.py`: installs skills/helpers and signed prep/finish webhook routes into the isolated Hermes home; writes redacted config siblings immediately.
+- `docs/`: architecture, setup, permissions, provenance, limits and Devin brief.
+- `private/`: generated tokens/config, Hermes home, meeting evidence and notes; Git ignored.
+- `meeting_app.py`: earlier draft retained temporarily for Calendar-login/Notion utilities and regression comparison. Its Python scheduler is disabled. **Do not run it as the meeting scheduler.**
 
-## Requirements
+## Device requirements
 
-Linux or macOS with Docker Engine/Desktop and Compose v2, Git, Python 3.11+, internet and substantial build disk/RAM. Start by allocating at least 8 CPU cores, 16 GB RAM and 30 GB free disk for a rehearsal; these are provisional planning numbers, not measured minimums. Apple Silicon compatibility is unverified; no Windows-native support claim (WSL2 needs a rehearsal). Docker socket access gives Vexa runtime host-level Docker power. Use your own isolated local Docker engine, not a shared production host.
-
-First image build and model downloads can take a long time. Devin credits do not pay for model APIs or provide access to your laptop. Run Devin against an approved environment that actually has local machine access, or have it prepare commands you execute locally. A cloud Devin workspace is not automatically your device.
+Install/start Docker Engine/Desktop with Compose v2, Node.js 22+, Git and Python 3.11+. Docker runtime access is effectively host-admin access: use your own isolated development engine, not production. Linux/macOS are targets; Apple Silicon and other architectures remain unverified. Expect substantial browser/model builds and disk/RAM usage. No company server/account/image access is required.
 
 ## Setup
 
-All commands are from this repository root. Review code before granting permissions. The guided entrypoint is `bash setup.sh`; it runs the explicit steps below and pauses for human account authorization. It is not a claim of unattended or already-rehearsed success.
-
 ```bash
-python3 setup_local.py init
-python3 setup_local.py doctor
-python3 setup_local.py install
-python3 setup_local.py fetch
-python3 setup_local.py build
-python3 setup_local.py up
-.venv/bin/python setup_local.py bootstrap
-python3 setup_local.py login
+git clone https://github.com/Alpon-LLC/meeting-intelligence.git
+cd meeting-intelligence
+bash setup.sh
 ```
 
-`init` generates private secrets in `.env` and `private/`. `fetch` downloads the exact public Vexa source and applies our patch. `build` creates local images, not remote images. `up` starts local services. `bootstrap` asks for your bot account email and creates an API user/token privately. `login` gives you **http://127.0.0.1:16080/vnc.html**: sign in yourself and handle MFA. The browser closes after a confirmed profile upload to local object storage. Do not share the browser session with Devin. Nothing is installed into an existing Hermes profile.
+The setup script initializes private secrets, installs Python/Node dependencies, fetches exact upstream Vexa source, applies the patch, builds images, starts Compose, bootstraps the API user, opens local Google login, installs isolated Hermes and configures the real skills/webhooks. It is not an already-rehearsed one-shot success claim.
 
-Install and configure Hermes:
+Human steps:
+1. Sign into the Vexa bot's Google browser at `http://127.0.0.1:16080/vnc.html`, handle MFA and require confirmed profile upload.
+2. `source ./activate.sh && hermes setup`: authorize your own model/provider and budget.
+3. Follow [Calendar OAuth](docs/CALENDAR.md), then `.venv/bin/python meeting_app.py calendar-login --client-file private/google-oauth-client.json`. Ordinary OAuth, no DWD/X.509. Add your actual `calendar_owner_email` to private/config.json.
+4. Configure Notion token and parent page with `.venv/bin/python setup_local.py notion`. For faithful database/project/task enrichment, additionally configure your own notes/tasks/projects data-source IDs and schemas. No fixed company IDs. Optional Slack/CRM/email/task writes stay disabled until explicitly configured and approved.
+5. Configure runtime **after model/Notion settings are ready** with `.venv/bin/python scripts/configure_runtime.py` if not already configured. Existing routes are not silently overwritten; inspect/reconcile them explicitly.
+
+Run two terminals, both from the repo:
 
 ```bash
-python3 scripts/install_hermes.py
+# Terminal 1: existing Hermes webhook gateway
 source ./activate.sh
-hermes setup
+hermes gateway run
 ```
 
-Authorize your chosen model provider and budget. Summaries use that provider; local speech transcription does not imply local summary inference. See [Hermes setup](docs/HERMES.md).
-
-### Calendar: required for the autonomy demo
-
-Follow [Calendar setup](docs/CALENDAR.md) to create your own Google OAuth Desktop client, enable Calendar API and authorize calendar read access:
-
 ```bash
+# Terminal 2: real JS scheduler
 source ./activate.sh
-.venv/bin/python meeting_app.py calendar-login --client-file private/google-oauth-client.json
-```
-
-This opens your normal browser for Calendar authorization. **It is separate from the Vexa Google browser login**, even if you use the same account.
-
-Give your bot a unique display name in both `.env` (`BOT_NAME`) and `private/config.json` (`bot_name`). Restarting services after configuration changes is your explicit operation; this app does not change an existing deployment.
-
-### Notion: building-session integration
-
-Create a Notion internal integration, create an empty test parent page and share that page with the integration. Use read/insert/update content permissions; this example does not need user-email access, tasks, a database schema or Composio.
-
-```bash
-.venv/bin/python setup_local.py notion
-```
-
-Supply the token through the hidden prompt and the parent page ID. Never put it into Devin chat, a Git commit or a screenshot. This release creates child note pages, not records in the company's old database schema.
-
-### Shared-room race
-
-The organizer creates a dedicated demo Meet and obtains everyone's consent. Each attendee adds the event to their authorized calendar with `[record]` in the title, then:
-
-```bash
 .venv/bin/python setup_local.py consent
-source ./activate.sh
-.venv/bin/python meeting_app.py run
+npm start
 ```
 
-The scheduler joins up to two minutes early, at most one bot per local profile. Requested != admitted. Check `meeting_app.py status`. Name bots uniquely. Multiple bots in one room, same-account simultaneous joins, platform admission, quotas and capacity remain live-rehearsal gates. Do not call the race supported until tested. Invite/admit bots as required by Meet; browser login does not bypass organizer controls.
+Use a consenting demo Meet, add the event to your authorized calendar with `[record]` in its title, give the bot a unique name and keep your device awake. Original windows: prep 30–40 minutes before start, join 8 minutes before through 10 minutes after start, finish 1–40 minutes after end plus durable deferred/claim recovery. Notion/Slack side effects require explicit tenant configuration and approval according to the public runtime contract.
 
-After the event ends, the app requests bot stop if still active, waits for Vexa's terminal transcript by exact ID, saves it locally, then invokes Hermes. If a submission has an unknown outcome, it stops for review instead of blindly spawning again. A transcript with failed capture status may be partial: inspect it before use.
+## Verification
 
 ```bash
-.venv/bin/python meeting_app.py status
-# Review private/meetings/<occurrence>/summary.md, then explicitly publish:
-.venv/bin/python meeting_app.py publish private/meetings/<occurrence> --approve
+npm ci --ignore-scripts
+npm test
+.venv/bin/python -m unittest discover -s tests -p test_public_port.py -v
+.venv/bin/python -m unittest discover -s skills/meeting-auto-join/tests -v
+.venv/bin/python -m unittest discover -s skills/meeting-finalize/tests -v
 ```
 
-Notion publication stores a durable receipt before calling the API and reads the created page back. An unknown outcome requires manual reconciliation, not blind replay. Changed content/destination refuses a duplicate publication. Original transcript is never overwritten by summary generation. No tasks are created.
+Tests use synthetic events/provider responses. A real localhost HTTP test verifies original signed prep dispatch and duplicate suppression. These are not live Google/Vexa/model/Notion passes. Docker daemon is unavailable in the authoring container, so a full isolated-device rehearsal is still required.
 
-## Offline demo and tests
+## Privacy and publication
 
-```bash
-python3 -m unittest discover -s tests -v
-python3 scripts/offline_demo.py
-```
-
-The offline demo uses **synthetic API responses**, explicitly labeled in its output. It exercises scheduling, admission-state separation and local transcript handling. It does not prove Google login, real capture, Whisper quality, Hermes model execution or Notion delivery.
-
-## Stop and retention
-
-Stop the scheduler with Ctrl-C; that does not claim to stop a remote bot. To end a live bot, use the authenticated Vexa API or wait for the app's scheduled end processing; confirm the exact bot is terminal. See [troubleshooting](docs/TROUBLESHOOTING.md).
-
-`python3 setup_local.py down` stops Compose services without deleting volumes. Database, browser userdata, raw signal audio, model caches and local transcripts remain until you explicitly delete them. **recording_enabled=false does not mean no audio retained.** Do not use `docker compose down -v` unless you intend to destroy local data. Notion/model-provider copies need their own deletion process.
-
-## Release boundaries
-
-See [provenance](docs/PROVENANCE.md), [privacy](PRIVACY.md), [security](SECURITY.md), [Devin prompt](docs/DEVIN.md), and [verification](docs/VERIFICATION.md). Repository publication does not establish working images or a tested device matrix.
+No real credentials, internal rosters, customer glossaries or private meeting narratives are intended in the export. Incident references excluded for confidentiality are catalogued in the manifest; key operational algorithms remain in skills/scripts. Full secret/license/dependency review remains a gate. Vexa `recording_enabled=false` does **not** mean no raw signal audio retained. Compose down preserves volumes. See PRIVACY.md and SECURITY.md. Never claim production image equivalence from an image tag alone.
