@@ -15,6 +15,7 @@ python3 setup_local.py up
 .venv/bin/python setup_local.py bootstrap
 python3 setup_local.py login
 python3 scripts/install_hermes.py
+.venv/bin/python scripts/configure_runtime.py
 printf '%s\n' 'Infrastructure prepared. Next authorize your model and Calendar; these require you.'
 printf '%s\n' 'source ./activate.sh && hermes setup'
 printf '%s\n' '.venv/bin/python meeting_app.py calendar-login --client-file private/google-oauth-client.json'

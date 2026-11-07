@@ -1,0 +1,48 @@
+{
+  "comment": "Notion page body blocks for caption test sessions (Pitfall #21). children array for POST /v1/pages. No bold/italic keys per Notion API gotchas.",
+  "children": [
+    {
+      "type": "heading_2",
+      "heading_2": {
+        "rich_text": [{"text": {"content": "Meeting Summary"}}]
+      }
+    },
+    {
+      "type": "paragraph",
+      "paragraph": {
+        "rich_text": [{"text": {"content": "Caption system test session — <organizer> testing caption pipeline with Meeting Bot bot."}}]
+      }
+    },
+    {
+      "type": "heading_2",
+      "heading_2": {
+        "rich_text": [{"text": {"content": "Caption Test Details"}}]
+      }
+    },
+    {
+      "type": "paragraph",
+      "paragraph": {
+        "rich_text": [{"text": {"content": "Duration: <duration> min scheduled. Bot joined, captions captured (<N> lines), bot left via <leaveReason>."}}]
+      }
+    },
+    {
+      "type": "heading_2",
+      "heading_2": {
+        "rich_text": [{"text": {"content": "Transcript"}}]
+      }
+    },
+    {
+      "type": "code",
+      "code": {
+        "language": "plain text",
+        "rich_text": [{"text": {"content": "<truncated transcript — ≤1900 chars>"}}]
+      }
+    },
+    {
+      "type": "paragraph",
+      "paragraph": {
+        "rich_text": [{"text": {"content": "Status: Pending Organizer Approval (test session — no action items created)."}}]
+      }
+    }
+  ]
+}

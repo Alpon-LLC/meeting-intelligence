@@ -23,7 +23,7 @@ def main():
     subprocess.run([str(venv/'bin/python'),'-m','pip','install','-e',str(source)],check=True)
     home.mkdir(parents=True,mode=0o700)
     for skill in (ROOT/'skills').iterdir():
-        if skill.is_dir(): shutil.copytree(skill,home/'skills'/skill.name,dirs_exist_ok=False)
+        if skill.is_dir() and (skill/'SKILL.md').exists(): shutil.copytree(skill,home/'skills/meeting'/skill.name,dirs_exist_ok=False)
     print('Installed isolated Hermes. Next:')
     print('source ./activate.sh')
     print('hermes setup')

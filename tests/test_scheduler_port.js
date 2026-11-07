@@ -1,0 +1,18 @@
+"use strict";
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const root = path.resolve(__dirname, '..');
+const scheduler = path.join(root, 'scheduler/run.js');
+assert.ok(fs.existsSync(scheduler), 'Port the real JS scheduler');
+const text = fs.readFileSync(scheduler, 'utf8');
+assert.match(text, /acquireDispatch\(/, 'Preserve dispatch leases');
+assert.match(text, /deferred_finalizations/, 'Preserve deferred finalization');
+assert.match(text, /phase === "start"/, 'Only start uses direct Vexa lifecycle worker');
+assert.doesNotMatch(text, /DETERMINISTIC_LIFECYCLE && \["prep", "start"\]/, 'Prep must not bypass agent webhook');
+assert.match(text, /sendWebhook\(url, dispatchPayload/, 'Prep/finish keep signed webhooks');
+assert.match(text, /MEETING_PREP_URL/, 'Prep webhook configuration remains');
+assert.match(text, /MEETING_FINISHED_WEBHOOK_URL/, 'Finish webhook remains');
+assert.match(text, /consentEligible/, 'Public opt-in consent filter');
+assert.doesNotMatch(text, /john\.ai@|alpon\.xyz|\/srv\/alpon|netcup/);
+console.log('scheduler port structure PASS');

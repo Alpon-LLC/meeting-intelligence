@@ -12,4 +12,4 @@ Human steps (Devin may guide, not impersonate you):
 
 Use the same Google account for Vexa and Calendar if convenient, but these are separate grants. Google sign-in/MFA, Cloud project/client creation and consent cannot be silently completed by Devin. Do not use a shared organizer OAuth client embedded in this public repo; each attendee supplies their own unless the event owner separately establishes a properly authorized application.
 
-Only timed events with a valid HTTPS Google Meet URL and `[record]` in the title are eligible. Cancelled and self-declined events are skipped. Add the marker only after actual participant agreement. It is an opt-in selector, not an automatic legal-consent mechanism. The scheduler runs while the process/device is awake.
+Only timed events with a valid HTTPS Google Meet URL and `[record]` in the title are eligible. Cancelled and self-declined events are skipped. Add the marker only after actual participant agreement. It is an opt-in selector, not an automatic legal-consent mechanism. The original JS scheduler runs via npm start while the process/device is awake.

@@ -1,0 +1,1708 @@
+[
+  {
+    "skill": "meeting",
+    "source": "SKILL.md",
+    "status": "ported",
+    "source_sha256": "f3653eb4c9dadf75d4c73a8b75b9f72d9310680f8d03201b0450ad6239d3d411",
+    "output": "skills/meeting/SKILL.md"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/two-channel-delivery-pattern.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "71de9bd721c61c45640072cd084b6adcadb267d360aff299f543040c3c416382"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/notion-task-create-endpoint.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "75e496877904b53130eddd80461063254fd8aa26666ea3415b902a6778c82de3"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/calendar-event-creation-verification.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "661807920eaa14e1fafbc80b751d795c0ac05336fa7c84d1c5ca89e96fd892f8"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/framenavigated-kick-transient-2026-09-11.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "be4591ec92e32d97aea4b3319b1b21d9b32b445e40e02860df8be95c48535b85"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/vexa-primary-contention-convergence.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "d4412107e9a747d517eb20f8107763ee718cc282f3f100cf87da85e9470df42c"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/pointerless-slug-finalization-recovery.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "56b6339051f43aeb7bd78153cd8c2a0d02a108c229eaf1209660e6846f2400a5"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/duplicate-fire-triage-context-signals.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "1b3f6f3bb8ccdcd0909a0e14579367ad4164df5992f2a56da9b4db9c5e744a39"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/review-flag-finalization-retry-loop.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "97a0f4b4311cd06da2b0dda6ecb5c94eacafde22bf7475e4d590a5bc298641ba"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/requirements-reconciliation-from-transcript.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "144113d6629b5c4ab5cf785a3cbc297d6dc3ca25f00c7927235a899ef4a23e22"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/alert-routing.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "eb5b2b9cd0cdd8dc352ec73c20a0dff811b0568242574d190317b658c4f041bf"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/meetbot-sigterm-after-join-process-group.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "7ceae90b5e15372210f1f6d085efe1cfca72ecf9cb759390f5ba12191a56acee"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/dispatch-lease-fencing.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "a309f05ad397929f08cb8d2f754b6c12f75c5c20a23dfa06be039a82496e8bab"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/transcript-injection-guide.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "610494396f8c994816289648f95ab7ea6413887eb6b83dc710c967ec6e0dde4a"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/two-workspace-roots.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "74a2b3efbac6b3b31aa8d50677839f3eb709c7d1188c62c31ece4b491ba9f093"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/meeting-notes-db-fallback.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "e5f4d684604358f19503716ccc936863f016ff62166eadda3545c08da4846a47"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/slack-ops-reference.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "8381e5acb42d6354874be59118f8768ce5da6a14d1b4b8d0206fc01a34bceb27"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/late-room-activation-join-click-timeout-2026-09-11.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "1a7fae25df1bea6acfd24a0e2fd284bb84ff8d2d2d92dad1deda33529f21a170"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/calendar-event-rescheduling.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "799697518e94ebeaadd28e799548745ad5614e52ac6e885eb1b9aa60c9c69eff"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/vexa-start-failure-no-capture.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "a5f84b412d24cb6bbc0a66d841be795471b462c97595bd5835462f4626c3dda9"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/sparse-vs-test-session-classification.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "287e847dd82758e005f802e194846a53b17379ce299560f318325ea971d5293a"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/webhook-idempotency.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "adc6a4fab0ec008f9395700203b4e2c7dfd8250569d49cc0fa7a8f0fa0863861"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/audio-spool-capacity-capture-loss.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "b3b966337348bc735927c1f3508a84903ca6ab3b06838d310fb9b1cb4d1ee9f8"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/guest-access-blocked-diagnostic.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "156247d21ebe2f75dd0360efc51e3e41aeb58da0853752d4df71bd83f5e8f660"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/meeting-pipeline-and-transcript-provenance.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "cf0177bcb6a2fed9e330eeb6c2e08f0c1611f5b8f0ef088accc92ed87d5dec56"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/dispatch-lease-heartbeat-discipline.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "aae745f03e320336f18f317bc141a4e84487635655a35d72c42e673d8c174034"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/shared-constants.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "d7d2bd8e288c283861c88f44dfe7fdada7b144d67f5d6cd5ac567b6bf7021289"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/atomic-joining-lock-acquisition-2026-09-25.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "013737ec0627b41737b5d53b5883a7f135c919775150d64ad9d877132146b49f"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/prep-only-directory-bot-never-joined.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "a996f836b096fa7cce8ee57fad79e11e05172f5f25f99883c5c2833588a2c939"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/meeting-finalize-notion-task-writes.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "99682e54bc14ce44062afb4d45e01fb5f0c4b413a7122969f35fcd9ac6a9518d"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/drain-loop-unboundlocalerror-fix-2026-07-16.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "a9d10251c877a3e1a3958d074ffb82a2a89771a1f43eee43f822d04d99da54af"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/approval-reply-destination-override.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "f362f430316b47b78449e5cd035273026cdf17dbb0f376c6bdc648551a0491b8"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/chrome-cookie-db-auth-check.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "a67c2a57a79e5ca69750954778a5d7f75338bf9a5c4d5acdc258342171b8b672"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/playwright-setup-guide.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "412b48162bbdd5578735065e2ad9a419080fd80b93e0dd360e7a06ef6e486a4d"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/overlapping-meeting-concurrency.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "dd46aef8ff502f97c4aca6056f618f1cb51d3e4d4453a421ba520a088735cf9e"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/concurrent-delivery-gate-bypass.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "0f86af48916310c1e22ec15c6eaef9b5375f15c3e311adc36663485d698fe67f"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/meeting-ended-detection.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "9795575528e0364bada3bd03b27f9adb68d38edf9821af09ae50fd96a51c2e45"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/mark-notes-done-and-publish-approval.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "f7181583e940c8efaf45cf39bce7b1a7fb4470917b589380be545ced64b06797"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/host-denied-bot-join-failure.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "e590fa44eb241babd5eadcefd4f237f21d2746cf54274ab8b7c7e512f83c6c76"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/existing-only-approval-reconciliation.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "1b6495279fcfd9e011641aa9bda3d070042923cd009357e051855882e939f49b"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/session-verification-and-host-reauth.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "cd5870b716390650b40645bcafc3426b6ccca5b222446f30bb164dab0008e506"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/early-join-respawn-then-gate.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "6b038c4c7daf9aa59c1c6c24e9e0a019fdd04665328fe6b421b25642ff86e177"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/drain-loop-zombie-debugging.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "05614d8467c59863356446951ca5bff746046689ac1592b8b9f3062dac1eca48"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/interpreting-client-feedback.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "73e9ac33ab7de096d700473447e911f80d8af6fe05c9ff8ea389cdd57451162b"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/recurring-events-directory-naming.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "f2144a0e3b25e251c69abd2a6c93ff25aeedd663dc1e259cc0888157cd9e3c72"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/notion-attendee-resolution.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "b8550a052cb9844a7ac56f8c17ca8fdef973695804d5d12b92b21672ad9e8ad7"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/tester-qa-requirements-and-legacy-framework-review.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "8bf3c44eef3190d58da427cac0e0692b60f98f2b7777963d7bc706e94b028e09"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/meetbot-profile-dir-and-slack-token.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "228aef86e9d98c3c8938c23f2b3ee54003215fd63ee05450096503e399fa5c4a"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/auth-validation.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "9413c991a06fc18e570b87775357b336ec7101ab578743f10c542e28c252caad"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/dispatch-fenced-external-write-reconciliation.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "95311b0a31f61dbee86ebdc7585556658713414a13264361ca90bb365a28b28b"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/retrieving-existing-meeting-notes.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "bd28bff8952bd31702867b57f3e00781bcff6b778466bbc0049d823262fafb24"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/bot-never-joined-vs-join-failed.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "3d88ee841891ef7a1d9c960f991cd6e40e49b76b204e3ba5631eceea26cb2d21"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/rfp-driven-discovery-prep.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "56de44ddba4979127c42f876a94f997cc0c272ac06c55fea20d54952877e2e99"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/prep-only-directory-vs-bot-artifacts.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "29a0c2639854d0f6414a1cb6b767e960daf779929e26e0afe5f5b265847b081b"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/runtime-environment-paths.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "0b7bc4ace96fda7a66e62834fdd979928e96409d49e3537872dd199220083ec4"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/host-denied-admission-vs-profile-access.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "2c86e7b8acaf095ab4852ec0296d7f222a8000075fb96713ba6a4abd1ef1abca"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/triage-publication-transaction.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "eb8e4b6622ef709b1ad273121033f59e83217063c4baebf8bec7ffe1032a8aff"
+  },
+  {
+    "skill": "meeting",
+    "source": "references/external-follow-up-calendar-booking.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "50716978ac77276adadf4de7ec800a1fefb99a952db1b3642d156510bbb5d189"
+  },
+  {
+    "skill": "meeting",
+    "source": "scripts/meet-join-diagnostic.py",
+    "status": "ported",
+    "source_sha256": "67d241590b5dfee3eae9013af77faa80942019d5408e5c860ac48931ee511804",
+    "output": "skills/meeting/scripts/meet-join-diagnostic.py"
+  },
+  {
+    "skill": "meeting",
+    "source": "scripts/spool-audit.py",
+    "status": "ported",
+    "source_sha256": "91aeb066c6248f647c2d0c333922e649b937c7a6b183e2bf44e60800b2e1313f",
+    "output": "skills/meeting/scripts/spool-audit.py"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "SKILL.md",
+    "status": "ported",
+    "source_sha256": "104cfaa8692d69a4092025f5dae2a7b6ed5f0037e9609ab256fc46fa06717eaa",
+    "output": "skills/meeting-auto-join/SKILL.md"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/instant-pid-death-post-script-exit.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "d2652e79f2705840b573da86c012d530cf55c6fc58214a58f65db9486f9c76ef"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/headless-join-counter-example-2026-07-13.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "8d0389a22f125c665f7b9fd231598cba094c727cbf0efe4490127516303eb99e"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/sibling-bot-joining-null-pid-2026-06-16.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "5a0a27623a2436925baa3177b0303d823c6d54bbed32bacdf2af72f822c67c04"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/dwd-helper-cli.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "a95c4f0e50bba864237d9ed467cbe83e559edc6f7c8f0d785bd1cd2729f23733"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/fallback-calendar-paths.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "8dd84bf20ec6454086056ef553aa7206c8478db5860332e0cc51fd8d0a2504be"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/fresh-primary-auth-still-dead-2026-06-16.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "2359ce385e34b5bb49893d314620c0ec6804df77e73f5238c844d3074865e708"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/concurrent-sibling-hard-guard-overwrite-2026-07-16.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "6f4121ee84e164e25ee0fb2a98e0bb70cb282b6a0e847a22dcfada683cba6a3e"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/meeting-stt-context.v1.schema.json",
+    "status": "ported",
+    "source_sha256": "d3aa7c82777c7ddca729bf3dd9f3558be9809c52894a600aadda5acd9e6781ad",
+    "output": "skills/meeting-auto-join/references/meeting-stt-context.v1.schema.json"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/caption-dom-structure.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "47b59270f70125aae95df44b37e087bff3dbe4c709e36e932965735c6769cd97"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/process_manager-headless-shell-issue.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "49b676f79401d016d37be5a9e524c8c2dd0e844a3ca399e5631951108e08f771"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/switchcall-page-closed-cycle-2026-07-16.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "def5b9a491d4ead22f8c6f9c9c9d182d44438e243e39f815e9f65aaef20c5935"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/pre-meeting-start-timing-2026-06-18.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "cc3efde68b731dd91dcb9d9cf9213490efcc70597917e6a5d33dceb8a493c4a6"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/concurrent-session-cascade-2026-06-13.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "46c2fa1728f6c7a692348bc47c6a961f78c6ad4ad82835a6a39ef71f36a7b5a1"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/incomplete-shutdown-prior-delivery-2026-06-18.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "6dcbced5f30c4c2e2bb6125574bb65b0c801145b250f97b60d0b0e25c6a8e206"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/caption-selector-staleness-2026-06-08.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "1b0f1363cb74a4c48e5d4f12b32e9a3a37b316105059a6f477f6eb63880def0c"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/auth-failure-diagnosis.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "03605e4cc3227dd1f672abd2c9a00c68d91e8668fea5adf9ddb6de691d3dcf69"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/unboundlocalerror-dom-crash-2026-07-16.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "53d7f4bb0417ed89273fb8ac2a4530ee6caa376abfad2dd21b2d408ea4171785"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/cross-meeting-profile-contention-decision.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "71a90e9a3c6271e711a508f44b3f3abc458bb3c7aa42bbe215a069856418d486"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/cross-meeting-profile-contention-2026-07-16.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "f7f754f792fd6134c067600c727449e4c7b05d522f978dda61ab63137d2a6ef8"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/caption-observer-empty-on-rejoin-2026-06-09.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "bd5c213d25407fb9312eb1c41936aea6c19980bee37f58250248e7b588ca6cd5"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/auth-validation-and-cleanup.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "9aa7b51a2a82433190777a99a7eec73f9f7fff0b303d8d055848fc4993d3927e"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/auth-race-condition-mid-workflow-2026-06-18.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "15b1b7ada17fbab6dbb91717ed31c4d194077a1c846eba04675f1817e6fd73b8"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/chrome-profile-lock-contention-2026-06-19.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "6dd36282e7c836e8b3aacf10517d2789a02296a74132a6d51d536dfbb4bd7ee7"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/duplicate-delivery-dm-spam-prevention.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "e0c20c8808674f0e360e2721b303ce48295fc90c22cafc4f40e65c21c4992c05"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/manual-retry-headed-mode.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "03000e6902dcf84577f324dd48e794c5509da4f34cecad526d2ae2c0228404d5"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/meet-page-title-three-variants.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "e7446488f86d096a8fcb9520c576da53360f346006ad88b4ada068fd4ce18123"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/lobby-timeout-auth-corruption-2026-06-10.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "d3183c907e15505ba7dcfdedd27f070ebbcb9fab479c67c252d35b6524b62540"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/auth-testing-playwright.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "e794a67d97bd386e6e24927c8b1ef58e2e4e5b84b74fc2cf515acd4eaf0017bb"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/slug-dir-dedup-gap-2026-07-13.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "80e4a86a3866052c0e132b5f2bbc3402b577869825220a49fcc6a11b22d33506"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/transient-auth-failure-recovery-2026-06-16.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "b5a7bf8e8fa4474f22a9458b990360df5b1cb531858c9fb4ba6ddc11d5baa343"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/ad-hoc-join-failure-flow.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "fb8803ab09a4392054295927bd6270cce33fc0ed1a2cad77e76d586d7b744cfc"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/one-cookie-noninteractive-auth-2026-06-14.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "7ec923de27082b0979fda7f89f6bd2ab77ca26d9aa0a9c1aff27fa51faf4d8ed"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/auth-backup-expiry-2026-06-12.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "6045ff9557a46454c9c74f7b27dd805e34e94d78674f84d78a063e65db1561dd"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/non-auth-retry-cascade-2026-06-18.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "ccf599103d8be008a0860e437e0c750f35a36ba34a0c9829c8248f2c6ac0e3fe"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/operator-override-after-webhook-skip.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "9e116ab598bc575d92bdd265e10b5b07fd35cb937f9143cca2accd24c9c524a3"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/host-denied-re-spawn-futile-2026-06-18.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "0b8846abaa8c073eda519603460004549e91ebe43f70cd9ce73107d0e620d682"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/camera-not-found-join-hidden-2026-06-11.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "3e4c52a2c2899ced210a1b3badf4aa4965eaed3343ab309170a460f100a01b66"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/persistent-no-join-buttons-2026-07-16.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "490bce7377e154cfcf5c37d3db56cafe0d6c3b786417587f13b4e3a18d4dc718"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/page-closed-diagnostic.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "9d2a696b9e6f1e2dfbb2743ec9f85514bf6a75b463001621494ba2cc836aa2e1"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/join-button-click-timeout-2026-06-22.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "93bab62aca213549b5d6cb3146e6e04b14518c6fae2eebf0d8819cf72c394ff9"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/debugging-bot-issues.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "82cf50585597f94819baea6fdfdfb826b53d20d9cb527c722d0511ce1326b9f5"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/process-manager-headless-shell-2026-06-11.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "18664dc8b8de05a1d9cac78e6e0db8de758540634dd4feb41bc469fee5f2b99e"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/webhook-signature-format.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "ac88101b305f3ba84b17491e188c352f41f345de948562f34c0f17beaf874993"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/contended-profile-launch-recovery-2026-06-21.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "ad5568e31248d26e8c244d2fee69ba27e10ee73c496a428fd9a792a9f0ca0894"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/cancelled-file-reschedule-2026-07-13.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "e80ea95bf131332fb387826fa2a3eae104bb8c4df2327ccdf5b916096456e1dc"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/stale-lock-removal-race-2026-07-16.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "798580e7ead4f4aebc53755df624e744c73ea1a5cb1d120bfc9ea89051d7ce75"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/meet-spa-loading.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "daa5d4bbfde7a3ec0d36511b06a8ce6177eac93313f15cebe40b78723dda0723"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/wrong-account-auth-2026-06-11.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "e36415b8d49a9d7e85ab44fe8b4e52d3408799a9f950b6a16436864a1fa636fa"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/joining-lock-mechanism.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "6fd473732f06b2611c9e25c7bf5686979cd957383aeabc526b7e7f01b9fe5847"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/orphan-zombie-cwd-root-2026-06-15.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "1ac5fe3e10a0e69bf4e488e5e05691ab6f616e37c0f07969b2c2a615b384e3fc"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/stale-joining-gate-plus-one-cookie-auth-2026-06-14.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "40fbe3c0074e2f5a9e1000c6748f1641ca1e1b009e62f64c685c3bbe18ed529c"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/cascade-unbroken-joining-overwrite-2026-06-18.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "b5caabfddfe1bfd757c83066cdb39d05d6955082cc5c8883aa12be438209b845"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/persona-sensitive-meetings.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "5a4cb80703f83824ad09b32d06e41dd5a2f71fb10be50d99fc25584bc8f5a8fa"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/code-bug-join-crash-2026-07-16.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "941bf601a49fd999124ddc318dd911e66fa86356ca57af5b676c48cff282c6e5"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/dbsc-session-binding-auth-invalidation.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "abc585a2f73025ef3f4d7f7669a75c2b7d1a8c74f26db8c54ff6ad86de29c19c"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/return-to-home-screen-signal.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "6fce195473c58461c387fa829e7f7a48a7241f4cd71cfd11ba13a9aa52adf6cb"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/multi-bot-log-analysis.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "f963da71bb89231b3549a8d53206ad13c207d3a00a80bd31ba74eba547933f37"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/captionsOn-boolean-false-negative-2026-06-16.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "03d8e877f589cfd242898051164ed051a820a9d4957f92ba6d149b159108ea8a"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/old-slug-dir-bot-vs-orphan-pid-2026-07-13.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "1de9a6c5ca5bc1985e6d87136f74449f9e2f4337c11afb06c7ded9c753da36fd"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/operator-retry-after-auth-gate-2026-07-03.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "5ca3c5ee750c46153c49011a371f056956e43162aca8804d1289e2d27f45cfd4"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/auth-setup-and-verification.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "e2ab0b841deab7833d269f12e69b4d2491aa8b8121ecf69a512d2447bfd0e93e"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/auth-backup-restore-2026-06-10.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "74018f5e8565cc87db8304baafedf3b820c91246762c917ee2f3234df5a66a1d"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/meeting-prep-lock-coexistence-2026-07-13.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "596b70b03715e3cb77ba578ed868945a82bf9b4b319a8cedba92afa6a5e8c4a4"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/unauthenticated-join-failure-2026-06-10.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "7bc8b76d84b3f6d88629ffd43af43ae0e9c83b0a1ee20b70e51ca2aeb9de2ec9"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/lobby-page-closed-exit-2026-07-16.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "6f691a509904a3f8e1eb9c06dccea0c4b6afb4f491d44abf164ae763d79747c9"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/prior-skip-resolution.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "1932f3fba186561936d2c3688b66b3f0da1f7e3fc0a86f072f5840d6a68cc343"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/sibling-resolve-race-2026-06-23.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "1a88441e34442b86f145d67721be92fdc47c7be6d88baf2c015596a81215bff1"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/rescheduled-event-handling.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "3523d1f0994a6971ac683ac88cfe5fc16e871b8a8bebac5e80c197c82ccfc0ba"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/stale-url-in-status-json-2026-07-17.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "6c00f80476d0c578702b90f46bf63928e6458b58f69c173045f42dc09d098b5b"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/lobby-admission-never-received-2026-07-16.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "6b9c72014947308b561a5445ab7e57ae067da835ca09111365d6a142398e4306"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/transcription-glossary.json",
+    "status": "ported",
+    "source_sha256": "676ed065750f0eb874beaaff221a8c504f3510da22026341a36449937c2c0e4f",
+    "output": "skills/meeting-auto-join/references/transcription-glossary.json"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/auth-longevity-positive-2026-06-17.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "3052b8635a4217cfaa14280c1475927ffc1d83c275ae70cbc0e2cc2bfd73c5df"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/approval-block-auth-false-negative-2026-06-10.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "d27501c44878b455266c9b5d134ef46b67e10cac4c68278243295d63089b3622"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "references/lobby-sigterm-cascade-recovery-2026-07-17.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "e818ad63a95a092b674474be514bf6f4f1562aa9a662cc5e4f4e4254f924f9fc"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "tests/test_build_notion_transcription_context.py",
+    "status": "ported",
+    "source_sha256": "d3a724c64ef642f0212c0ab53d21d0b2001eb003eabbcae8aa33409ff6d437ad",
+    "output": "skills/meeting-auto-join/tests/test_build_notion_transcription_context.py"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "tests/test_build_transcription_context.py",
+    "status": "ported",
+    "source_sha256": "74350c116d3aa9c4d6904571b8927fdf7a1c67889a68821f7a55dd603a6a8fff",
+    "output": "skills/meeting-auto-join/tests/test_build_transcription_context.py"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "tests/test_prepare_vexa_bot_request.py",
+    "status": "ported",
+    "source_sha256": "3b815314f85354fc568a5ab593322ca440441151cd77495aa7c482588d7de5d7",
+    "output": "skills/meeting-auto-join/tests/test_prepare_vexa_bot_request.py"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "tests/test_start_vexa_context_canary.py",
+    "status": "ported",
+    "source_sha256": "6a500d5c095a0e8fc0404c4aff6f9c28c44c368c396f3862be01e7640c3d346d",
+    "output": "skills/meeting-auto-join/tests/test_start_vexa_context_canary.py"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "scripts/build-notion-transcription-context.py",
+    "status": "ported",
+    "source_sha256": "e485af0b2edd0066fa214b3fa099ade7832e2ea6859459a382a0eac06edf3b05",
+    "output": "skills/meeting-auto-join/scripts/build-notion-transcription-context.py"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "scripts/diagnose-meet-ui.py",
+    "status": "ported",
+    "source_sha256": "5f78996defaccee448b22bf0552fccf3743ef50d352206b664ad11608ebbf2b7",
+    "output": "skills/meeting-auto-join/scripts/diagnose-meet-ui.py"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "scripts/safe-log-append.py",
+    "status": "ported",
+    "source_sha256": "fbbf1357de8101d36d9c5f2a02324d6a8b517d76311e0acb4acd5458dfedad3f",
+    "output": "skills/meeting-auto-join/scripts/safe-log-append.py"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "scripts/prepare-vexa-bot-request.py",
+    "status": "ported",
+    "source_sha256": "9f501dce6faab427815d3a1815c374b17e45abcc123204dba5dc44b0530e5a7f",
+    "output": "skills/meeting-auto-join/scripts/prepare-vexa-bot-request.py"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "scripts/start-vexa-context-canary.py",
+    "status": "ported",
+    "source_sha256": "ab32bebdf0593aa4b090dcaa421089c0b30235c4961e490ebb5e7eddc423ee1e",
+    "output": "skills/meeting-auto-join/scripts/start-vexa-context-canary.py"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "scripts/slack-dm.py",
+    "status": "ported",
+    "source_sha256": "12ec2b0381879fcdd2a65c314e248894613108d7e22f58ebc117812a4a494a6c",
+    "output": "skills/meeting-auto-join/scripts/slack-dm.py"
+  },
+  {
+    "skill": "meeting-auto-join",
+    "source": "scripts/build-transcription-context.py",
+    "status": "ported",
+    "source_sha256": "21dfd8d704cbac5367026a415e8be5f24970246544ef2de908b5c713f000924e",
+    "output": "skills/meeting-auto-join/scripts/build-transcription-context.py"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "SKILL.md",
+    "status": "ported",
+    "source_sha256": "558dd0b9775f1e3181eac1bcac1925bb0bf2be85c0c9492a49da58e334faa01e",
+    "output": "skills/meeting-finalize/SKILL.md"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "references/webhook-finalize-flow.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "6f39fa3ed9e5228c060987f062c5458838ab85215707a381553a9f3d55eb396b"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "references/attendee-resolution-pattern.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "d82378c2bb199b0d75f86ea5bd50960e6bc99a0dc2f3985e44e01a203e09c9df"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "references/recurring-event-slug-artifact-recovery.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "c729c8f63f5110e8379d079cab8f2094f0abb4d41415b1cf02df77ffd40de87a"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "references/sparse-transcript-detection.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "3647d2b45bff4836ad1d248207df1fef1dbcb383e3a92bc718253c7cc09a9812"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "references/output-log-format.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "d6766c6d4cc48058c7760b8d316759610a01c6cb1143f62ece43d225bd707831"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "references/sparse-detect-script-consistency.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "72f3d8277410fd12e312f05f0655b07ec52c7392d9b2071ba810bd7ff2cee4f4"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "references/slack-triage-gate-dm-ordering.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "bfd555ccc9413ae9a7f137fd27ee5ef2a1267e40114880617dfa64bf6dbb8b56"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "references/missing-template-files-guide.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "490a856608292eacb2ebb43a726379558cc6376227bc713a741bfd810fc205c1"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "references/index.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "d4214ad76fa84b8de0f8c9e26e148ceece91a3ad545e43b9788f55e83edf5e13"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "references/status-json-bootstrap-edge-case.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "3ba28aa0ea36a44fd0a1cc1a9563e70def4de0a32b23259475a7c5e443e3e7ba"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "references/gcp-python-sdk-slack-token.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "c71569d6b1a4fa2794961cccd3794287bf20e24031edd61e915e7377805acb0f"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "references/joining-file-contract.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "cd1018f4845a1ca3772c399579c2365124117379871cdf336474a1e2b8b45b7b"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "references/meeting-room-not-active.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "9538efd976b9657e937d576be3043fa6309913b85891d5f087ab0d3784202876"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "references/mock-transcript-injection.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "5ddb8f184abc9021a702740374a9bbe098a9be75d5d4015eb48a96cb5af7ae26"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "references/status-json-exited-false-with-joining.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "2cbf440d62916de07501511497a3b4dc15bab8c956e16908f93a87af27bfc407"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "references/bot-artifact-directory-redirect.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "b516dff1a2fed6ed9479edac392a408072a513c99ef2001aa845406c4bd3e31a"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "references/host-denied-gate-artifact.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "b487c5faa0822baa69c7ea4f7c1c16c7623a076b8b3f96764985254490c0c9dd"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "references/transcript-json-normalization.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "8fa23b1318bb3a73340d4fae97216861b38f9bb86c706055af1e8a6816c1a79a"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "references/persistent-auth-failure-dedup.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "2eb67e3d56a18748c66b19c73bf5f0f13c86f9200733f52fa0d14f0b8b53b2e7"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "references/log-overwrite-success-20260621.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "eee2d24bf7bf684f549bcca3fed3539d8586eca58bbc1e7bf9fc241d95625d5e"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "references/covered-by-existing-bot-pattern.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "c38d2d004daccea7e13f58e2672f266651ce3e88ba8d215b79c41aff12761d1b"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "references/drain-loop-recovery.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "b3c747708a6eade91cf3e022902aa0ba2a8bc9fcbe5ab684d97e712b7d9b36ec"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "references/write-file-env-var-sanitization.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "dadd818918cbad5a0175466221eff68cfff10b4fa2071192ecab34852e4b5177"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "references/partial-read-write-corruption.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "b3bdff3bfb6257bb97c42f3d3cc317335c297c3a0cb973e0935adbaf5cd8c934"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "references/recurring-event-id-pattern.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "0729ab697a00fa567bba8c401f4574f12e7ae9f4f9d124bc8f587c6c35da11f6"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "references/event-meta-stale-state.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "29eb0072ab8ee9130369c7cb5d7272be08cf4a7564191948a6cd135a57a69285"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "references/orphan-triage-context-crash-pattern.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "75217c2de26d9bee4a6ff8aeecc7a07ace2090af7b2a340850685b0b0c7d2dd6"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "references/log-overwrite-fallback-procedure.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "4dd8912be23bf1ce22dae7aef84341ba4a5e36a089fda74bf3c58ceb915bbfe8"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "references/log-corruption-recovery.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "cb12ce354f855fb95bcbe80d6f6877fba9862a87bedf5dcc71825f871ced0038"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "references/step-0b-3b-race-window.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "b03d5fe2cd5535db014b3820af4c66b9d5449d27b5d93d35448b05e4a63e1294"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "references/organizer-slack-resolution.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "e7db8bce8595cd55d412e9d06ab3ebbb8a8c0710cc6189f9b4ada7043a62bd6e"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "references/vietnamese-caption-quality.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "cdcefa2cd64d55ae11b28153f705c952eec29cef70eff5705bdfe8c07d699d2a"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "references/triage-context-schema.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "bf76692d34683ef5cfc05ee4c28d7329a74663d683eca727756a77c8b8c79977"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "references/zombie-bot-pid-reaping.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "5e1ea4a7de80f39848167a9ad1dab011b5a67c811835ac6f90f7ff69f04c89bd"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "references/transcript-corruption-recovery.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "40f76ad247bf995fb2822fab1bc9aa80db509603b51b0e9f4911f1bc67286afb"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "references/triage-dm-recipient-investigation.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "71518655fc4bf25d3b46b0cc3c3bc5362ebe1e89bd52c706ef722f16d71cf5c6"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "references/notion-api-rich-text-gotchas.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "f62a39ffcd6fe8e07863480910081d094f3db59ff0b3bf4a2bbbbf382d05af77"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "references/duplicate-finalization-pattern.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "15d48140922241fed58527117db4f25731faca1bdad149340a9f4c41a803effa"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "references/action-item-extraction.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "9d9d8f4d53a445f6a0493fa526eff4101d90c1b0b9dfc0d79b54da07b443bd2d"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "references/post-hoc-task-sync.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "2688950602663cf4d9cf54c6723501c7e3d92c4769a7053ad8e567fb00b3b1f1"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "references/slack-token-access-pattern.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "3d281f01a92fa4ce94a89d7c4aba9b04df580f3bac3489f511c68a7e568953e3"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "tests/test_group_transcript_turns.py",
+    "status": "ported",
+    "source_sha256": "8aaa427180da710d4924fb91f834cff8c628a26e30c9e1a9a1a7d1ea0bab1aa8",
+    "output": "skills/meeting-finalize/tests/test_group_transcript_turns.py"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "tests/test_verify_transcription_backup.py",
+    "status": "ported",
+    "source_sha256": "b952691ea809d24f4577d2e3b8db92feb607e5fb0a32263321987d79f8f47f0a",
+    "output": "skills/meeting-finalize/tests/test_verify_transcription_backup.py"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "tests/test_locate_vexa_signal_tape.py",
+    "status": "ported",
+    "source_sha256": "f9ea2ad76189a930f30467cf9b62c84952dab3e53d02604580286b1340aa74fd",
+    "output": "skills/meeting-finalize/tests/test_locate_vexa_signal_tape.py"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "tests/test_prune_vexa_transcription_artifacts.py",
+    "status": "ported",
+    "source_sha256": "f88df4e5e6ca2f58b1005708a17c830e1b6a95ca5bf1bb1549abcef85d91e8ef",
+    "output": "skills/meeting-finalize/tests/test_prune_vexa_transcription_artifacts.py"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "tests/test_render_signal_tape_review_audio.py",
+    "status": "ported",
+    "source_sha256": "5aba5274a9be04fbc1c374d634a1c6514c84d0dce10f05c553cfd38847af61f7",
+    "output": "skills/meeting-finalize/tests/test_render_signal_tape_review_audio.py"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "tests/test_merge_transcript_fallback.py",
+    "status": "ported",
+    "source_sha256": "ce63dc66459ded17d22cd88015d54732c091b11ce8e100c9a1274fe24859ab0d",
+    "output": "skills/meeting-finalize/tests/test_merge_transcript_fallback.py"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "tests/test_send_transcript_email.py",
+    "status": "ported",
+    "source_sha256": "c1043e078a742d1a2705c1e666d342f86999c2349b66b8d6dc0a060b805f377b",
+    "output": "skills/meeting-finalize/tests/test_send_transcript_email.py"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "tests/test_build_transcript_review_html.py",
+    "status": "ported",
+    "source_sha256": "87392b57b3065734a8db8ad51028cdcb7ca3287c437fdb1c2c2972a312df0d10",
+    "output": "skills/meeting-finalize/tests/test_build_transcript_review_html.py"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "tests/test_vexa_signal_batch_transcribe.py",
+    "status": "ported",
+    "source_sha256": "0efbf355e7a709fa95cd858286d0acd197de78573d1e3c9c5d14eb41d21aba20",
+    "output": "skills/meeting-finalize/tests/test_vexa_signal_batch_transcribe.py"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "tests/test_canonicalize_transcript.py",
+    "status": "ported",
+    "source_sha256": "b3cb24502e55ee7227a16046281f74e481fbd98849a71b22dcb0ba6db7ade4ac",
+    "output": "skills/meeting-finalize/tests/test_canonicalize_transcript.py"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "tests/test_score_transcription_quality.py",
+    "status": "ported",
+    "source_sha256": "eebf7143f4113a87e1c85e21b2b5b286a82d87ace9cbbacc841d614843c4d069",
+    "output": "skills/meeting-finalize/tests/test_score_transcription_quality.py"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "tests/test_update_transcription_state.py",
+    "status": "ported",
+    "source_sha256": "98ec0ed18829b982bfaea5bfdaa968c924532daef9970328896dee731256a7f9",
+    "output": "skills/meeting-finalize/tests/test_update_transcription_state.py"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "tests/test_prepare_transcription_review.py",
+    "status": "ported",
+    "source_sha256": "ff8afaece04bce4ef91717a20b64640c78d4a1e892b78625dafcdc3b8720907b",
+    "output": "skills/meeting-finalize/tests/test_prepare_transcription_review.py"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "tests/test_edit_transcript_with_ai.py",
+    "status": "ported",
+    "source_sha256": "63595c53a018eb0972378f95e7b47c96422fbcbe61311edcf6bc52a4b1aaa2d0",
+    "output": "skills/meeting-finalize/tests/test_edit_transcript_with_ai.py"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "tests/test_finalize_vexa_transcription.py",
+    "status": "ported",
+    "source_sha256": "a11e555f4b4ae2c2f94ea011edaf23b2cb57683adff3728b71664eecac1d9026",
+    "output": "skills/meeting-finalize/tests/test_finalize_vexa_transcription.py"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "scripts/build_transcript_review_html.py",
+    "status": "ported",
+    "source_sha256": "54a3bc59d9ef59b47c66c305eb111a2d40ab66d8c3a4f89ed5a38dc843ec83b3",
+    "output": "skills/meeting-finalize/scripts/build_transcript_review_html.py"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "scripts/send-transcript-email.py",
+    "status": "ported",
+    "source_sha256": "75501a65bef8d75c234b54939a4d95b58e091b08f2aa9189798a36838b556d40",
+    "output": "skills/meeting-finalize/scripts/send-transcript-email.py"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "scripts/score_transcription_quality.py",
+    "status": "ported",
+    "source_sha256": "38872b24140483a7efc0731162ca6e97074b121d1bafce681c6cbe240cd78313",
+    "output": "skills/meeting-finalize/scripts/score_transcription_quality.py"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "scripts/update_transcription_state.py",
+    "status": "ported",
+    "source_sha256": "67f8fa6c33b9c0f328d6ddd22f097b078d1e7f205d8be7ae1ab3692a8c65d95a",
+    "output": "skills/meeting-finalize/scripts/update_transcription_state.py"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "scripts/vexa_signal_batch_transcribe.py",
+    "status": "ported",
+    "source_sha256": "253d298170c21191c7611183667deeead08062be725ed0876c284d0b73a2527e",
+    "output": "skills/meeting-finalize/scripts/vexa_signal_batch_transcribe.py"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "scripts/sparse-detect.py",
+    "status": "ported",
+    "source_sha256": "6873e203a2952c6c57b8546bd1fd52e0570bfb017fb6e4c29bd8e3652236414d",
+    "output": "skills/meeting-finalize/scripts/sparse-detect.py"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "scripts/edit_transcript_with_ai.py",
+    "status": "ported",
+    "source_sha256": "8db31e5267436ecce76441bfdc7d998dc42a39b642f51b257336613e01340a67",
+    "output": "skills/meeting-finalize/scripts/edit_transcript_with_ai.py"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "scripts/canonicalize_transcript.py",
+    "status": "ported",
+    "source_sha256": "2fa2a89385b8700ebf6e7895c11b9095c61162def10f24296c3981029cdd536a",
+    "output": "skills/meeting-finalize/scripts/canonicalize_transcript.py"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "scripts/append-log.py",
+    "status": "ported",
+    "source_sha256": "4a821026c4951a32af989ae9d6dfe0c0f82c63d505b1c5a370fa09e7576719cf",
+    "output": "skills/meeting-finalize/scripts/append-log.py"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "scripts/render_signal_tape_review_audio.py",
+    "status": "ported",
+    "source_sha256": "9c93481522fa08ce6e4917f39da4e73fe3ba1414c586fd82f2bc6434aeb60831",
+    "output": "skills/meeting-finalize/scripts/render_signal_tape_review_audio.py"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "scripts/safe-log-append.py",
+    "status": "ported",
+    "source_sha256": "29158ecb41e78cd8e8b857a10df0bc182392f3def0ada0a91ebaa98c9c9e4ecf",
+    "output": "skills/meeting-finalize/scripts/safe-log-append.py"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "scripts/prune-vexa-transcription-artifacts.py",
+    "status": "ported",
+    "source_sha256": "59368555a92b89ea8741912051951e3d0898154883547f22962d79558204bda7",
+    "output": "skills/meeting-finalize/scripts/prune-vexa-transcription-artifacts.py"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "scripts/verify_transcription_backup.py",
+    "status": "ported",
+    "source_sha256": "2e208de7e24a8c802b4d76d8bb540fe0534bb3eb8a016787e51751ee1df99acb",
+    "output": "skills/meeting-finalize/scripts/verify_transcription_backup.py"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "scripts/deepgram_response_normalizer.py",
+    "status": "ported",
+    "source_sha256": "bf6a177e7a93e08e6bfbb0e63203323921e07af4aa789c2a25f5c262f6965545",
+    "output": "skills/meeting-finalize/scripts/deepgram_response_normalizer.py"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "scripts/prepare_transcription_review.py",
+    "status": "ported",
+    "source_sha256": "5713bba7c6ba8d2cbbc3060f7d3fb2cdcee9481d9783a1af56d221bcad95bf43",
+    "output": "skills/meeting-finalize/scripts/prepare_transcription_review.py"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "scripts/merge_transcript_fallback.py",
+    "status": "ported",
+    "source_sha256": "1dc6fb280a7bec8fc44cf1e4ad2cf29fec2c650c4d17ef0be8777870d9e83a95",
+    "output": "skills/meeting-finalize/scripts/merge_transcript_fallback.py"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "scripts/group_transcript_turns.py",
+    "status": "ported",
+    "source_sha256": "d46f114f0607b1d1abdbc6fe546a7463006a7eaa624b56807a6a06181be88b7f",
+    "output": "skills/meeting-finalize/scripts/group_transcript_turns.py"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "scripts/finalize_vexa_transcription.py",
+    "status": "ported",
+    "source_sha256": "479a7fb807374a90329e83bb8a9f59656cbc0b4159fd778a8f0164b3adc6467c",
+    "output": "skills/meeting-finalize/scripts/finalize_vexa_transcription.py"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "scripts/inject-transcript.py",
+    "status": "ported",
+    "source_sha256": "79b2ebc422e76952c3de6050efcaf13a1acc8aba04b8a63471d87f5db696928f",
+    "output": "skills/meeting-finalize/scripts/inject-transcript.py"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "scripts/locate_vexa_signal_tape.py",
+    "status": "ported",
+    "source_sha256": "ea2cf4c32e12efa8b1ad8adb2f44c229d7d863bc8049f09b722b920ccc1560f3",
+    "output": "skills/meeting-finalize/scripts/locate_vexa_signal_tape.py"
+  },
+  {
+    "skill": "meeting-finalize",
+    "source": "templates/test-session-notion-page.json",
+    "status": "ported",
+    "source_sha256": "3eba78b630daea203ae68679c82eed1cde7df8e54229c73d2a72184a2b1dad90",
+    "output": "skills/meeting-finalize/templates/test-session-notion-page.json"
+  },
+  {
+    "skill": "internal-meeting-prep",
+    "source": "SKILL.md",
+    "status": "ported",
+    "source_sha256": "f60d3d68b88e0735958d6518c5d611f56bd96713a626d00c8309eafc1f81b5b5",
+    "output": "skills/internal-meeting-prep/SKILL.md"
+  },
+  {
+    "skill": "internal-meeting-prep",
+    "source": "references/slack-dm-length-safe-rendering.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "33797607a14803a31bd746002d7b6e904703991f4991d04a1f7d7f695bdb993f"
+  },
+  {
+    "skill": "internal-meeting-prep",
+    "source": "references/notion-tasks-schema.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "dd177459ce0f38c7dea3adac8dc6c8eb7dde7bf56ed586cc3542f57945c2f1d9"
+  },
+  {
+    "skill": "internal-meeting-prep",
+    "source": "references/alpon-notion-workspace.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "36c2ddade194ea99c9feed18ac17685dcfcde4054eb31e7ce313fef5ba030ad7"
+  },
+  {
+    "skill": "internal-meeting-prep",
+    "source": "references/helper-safety-preflight.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "a12c0f7fec0d2b56f1dc1afdc5f5d55f47223a29428ff16964b1997af842ae0c"
+  },
+  {
+    "skill": "internal-meeting-prep",
+    "source": "references/notion-schema.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "3c04eb26a8488a9ae50bb48410c295420f317b272ea4e99ecf64e0511916dec9"
+  },
+  {
+    "skill": "internal-meeting-prep",
+    "source": "references/webhook-payload-schema.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "de550aba9ac3e4bf25e37a76b084bf5dd37b0841aceb07f4aef497cf66cfaf00"
+  },
+  {
+    "skill": "internal-meeting-prep",
+    "source": "references/notion-user-resolution.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "897111bcd1f23b3538804136ef85e58162d3785aba95aab7faf5f6b24d495b24"
+  },
+  {
+    "skill": "internal-meeting-prep",
+    "source": "references/slack-uid-resolution.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "4c2ce20ad418bd0f52f8b112a7cff138d0759b918aeb15c0b29862cc02a0290c"
+  },
+  {
+    "skill": "internal-meeting-prep",
+    "source": "references/project-titled-weekly-sync.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "6640cc51551d78ae2b51ef29fb08b528bbca52ee6a7318ea13c2fc31f2f12c5c"
+  },
+  {
+    "skill": "internal-meeting-prep",
+    "source": "references/bot-token-dm-limitation.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "3a1564df5f023b3bb0f0ed04a6d2a9f641dea70cb8d0e24bb70ee00d14ba7a56"
+  },
+  {
+    "skill": "internal-meeting-prep",
+    "source": "references/recurring-occurrence-runner-reuse.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "ea4e078f6f8b96301fc6def52d9294e4603c3648ff6b8cb1e5eddae6f94442a5"
+  },
+  {
+    "skill": "internal-meeting-prep",
+    "source": "references/sales-meeting-prep.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "2a58d683e7556a6f7fb2c30eb291af029296e7c1a9cbaea8276a251a2d73e311"
+  },
+  {
+    "skill": "internal-meeting-prep",
+    "source": "references/ad-hoc-chat-request-prep.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "c8ca0fb97157bf2d655bf9aba005bed7ca59c5619f12ff2e97a1954207a5bebb"
+  },
+  {
+    "skill": "internal-meeting-prep",
+    "source": "references/two-phase-lockfile-pattern.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "b63ebbef1e87e3df064e936963369f5f1e247b0bffd0f5523f8659377571946e"
+  },
+  {
+    "skill": "internal-meeting-prep",
+    "source": "references/python-prep-script-example.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "22b826332c48aba79f14a7d0ea283fdb2b00fc7024fc0381aa8e2c9aceed1dc5"
+  },
+  {
+    "skill": "internal-meeting-prep",
+    "source": "scripts/meeting-prep-helper.py",
+    "status": "ported",
+    "source_sha256": "f6b0fc90551a6eb5e6cdfbf960b474b8a37ade0af929fe445b0cc926e8772c09",
+    "output": "skills/internal-meeting-prep/scripts/meeting-prep-helper.py"
+  },
+  {
+    "skill": "meeting-transcript-to-notion",
+    "source": "SKILL.md",
+    "status": "ported",
+    "source_sha256": "bb4a8f13d5ba6c862c51acd39f04b6895f99cc568eacf0798bfac9c64a1b69d5",
+    "output": "skills/meeting-transcript-to-notion/SKILL.md"
+  },
+  {
+    "skill": "meeting-transcript-to-notion",
+    "source": "references/notion-database-access-issues.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "8e1d9c43139f3458e8d8c4823b13504f3f740015771d3dc44d8487252207fde5"
+  },
+  {
+    "skill": "meeting-transcript-to-notion",
+    "source": "references/notion-api-working-patterns.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "aae06623d1765a27680dda7565ec562367a0a7a19e68e9f981d8c2f3163df15f"
+  },
+  {
+    "skill": "meeting-transcript-to-notion",
+    "source": "references/ntn-login-troubleshooting.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "c84b97f528fb984acf4413d10870ec110514ac49be2c8ea45e24a5bc0aa103cd"
+  },
+  {
+    "skill": "meeting-transcript-to-notion",
+    "source": "references/user-prompts.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "25f350d31609ffb6e00f872f806908d024b9d60f091574d171b6059f5a3f45c0"
+  },
+  {
+    "skill": "meeting-transcript-to-notion",
+    "source": "references/notion-block-append-failure.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "004e4c647d91f9931dc4742a83945d16b95b7870f4e43f8997766b5dd891e34b"
+  },
+  {
+    "skill": "meeting-transcript-to-notion",
+    "source": "references/database-pitfalls.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "9da77069efcb703b52b9f7f4f19fc4fbb2d7da1d451f509a3eccd169dac84668"
+  },
+  {
+    "skill": "meeting-transcript-to-notion",
+    "source": "references/notion-schema.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "3c04eb26a8488a9ae50bb48410c295420f317b272ea4e99ecf64e0511916dec9"
+  },
+  {
+    "skill": "meeting-transcript-to-notion",
+    "source": "references/speaker-normalization.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "8704f3f8982b107ffc0e327fb179f42212e174c9bccdd0b6d3284dd1c9408c7c"
+  },
+  {
+    "skill": "meeting-transcript-to-notion",
+    "source": "references/notion-pitfalls.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "bed33c80a3b45ab1e03390eb50842e675d7ef606b5a3ab3c82ae2dcb42c54de7"
+  },
+  {
+    "skill": "meeting-transcript-to-notion",
+    "source": "references/notion-setup-verification.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "22d77df8ee326536a71018fbd40cfadce8ded21758884fb4a594c34dcbceb074"
+  },
+  {
+    "skill": "meeting-transcript-to-notion",
+    "source": "scripts/transcript-to-readable.py",
+    "status": "ported",
+    "source_sha256": "b33566b53f16dc4377d0bacab720428f1009dc59b2de8eaea36c30eb4d405173",
+    "output": "skills/meeting-transcript-to-notion/scripts/transcript-to-readable.py"
+  },
+  {
+    "skill": "meeting-transcript-to-notion",
+    "source": "scripts/attach-transcript-to-notion.py",
+    "status": "ported",
+    "source_sha256": "3fee307a41651c63262f07f208572a942f7aaec9b12ec230c40d48e839478ac2",
+    "output": "skills/meeting-transcript-to-notion/scripts/attach-transcript-to-notion.py"
+  },
+  {
+    "skill": "meeting-transcript-to-notion",
+    "source": "templates/client-call.md",
+    "status": "ported",
+    "source_sha256": "ab8e345128addc37bd71281109a3d052f3b790a377fa2a5ec597c70852b084dd",
+    "output": "skills/meeting-transcript-to-notion/templates/client-call.md"
+  },
+  {
+    "skill": "meeting-transcript-to-notion",
+    "source": "templates/README.md",
+    "status": "ported",
+    "source_sha256": "3574c9b694d9f75427bee2e1ef42af187abbb710f04162d8cfe6a77192ad2094",
+    "output": "skills/meeting-transcript-to-notion/templates/README.md"
+  },
+  {
+    "skill": "meeting-transcript-to-notion",
+    "source": "templates/default-meeting-notes.md",
+    "status": "ported",
+    "source_sha256": "c72a2d5c8bee77d6d89846cf0d51e0b9c0923a71f413f838b4ad7e2702fdf5cf",
+    "output": "skills/meeting-transcript-to-notion/templates/default-meeting-notes.md"
+  },
+  {
+    "skill": "meeting-transcript-to-notion",
+    "source": "templates/retro.md",
+    "status": "ported",
+    "source_sha256": "c1d9153dcff8cd6c44569ece8a58320798ad3542a9780e388d4d8b750bc615ba",
+    "output": "skills/meeting-transcript-to-notion/templates/retro.md"
+  },
+  {
+    "skill": "post-meeting-approval",
+    "source": "SKILL.md",
+    "status": "ported",
+    "source_sha256": "813b4990c10d8f435f65a2f1115281b3a2748d310d995b39ed2003f0a7d404c9",
+    "output": "skills/post-meeting-approval/SKILL.md"
+  },
+  {
+    "skill": "post-meeting-approval",
+    "source": "references/manual-finalization-partial-success.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "37bebf2ca1d955aa81b6f155db0f35f3c6cdb8770f5cef9952e98d812f20a88b"
+  },
+  {
+    "skill": "post-meeting-approval",
+    "source": "references/triage-status-query.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "e52e17f60748481be6bb8cca182da9c0fbfc746dc9b354cfddf9f832cfa70a56"
+  },
+  {
+    "skill": "post-meeting-approval",
+    "source": "references/gsm-token-in-out-of-band-scripts.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "5a1143fc19738c0051680b0ca0032c1d8480d180fe03213a8539679ce107f9a8"
+  },
+  {
+    "skill": "retrieve-meeting-flow-context",
+    "source": "SKILL.md",
+    "status": "ported",
+    "source_sha256": "549c2e05b45f49ba6acd7d19c089f31655fbc9ca1dfe033c7308fde8e0c65d3d",
+    "output": "skills/retrieve-meeting-flow-context/SKILL.md"
+  },
+  {
+    "skill": "slack-update-from-meeting-notes",
+    "source": "SKILL.md",
+    "status": "ported",
+    "source_sha256": "533e6dbc4e5df881352f0aa390952a042b204813d817af4ff34e8b97a0866921",
+    "output": "skills/slack-update-from-meeting-notes/SKILL.md"
+  },
+  {
+    "skill": "slack-update-from-meeting-notes",
+    "source": "references/user-prompts.md",
+    "status": "private-incident-reference-not-exported",
+    "sha256": "f62c47622cdce9cefb10422e3fb66b977d24632f01803339d0a2ad05d1f8f79e"
+  },
+  {
+    "source": "meeting-trigger/run.js",
+    "status": "ported-base",
+    "source_sha256": "6a0aad4c2e7f3c94dfb907c13a71ec36e4b20fd4812aaa4d7f2e545f8457e6a0"
+  },
+  {
+    "source": "meeting-trigger/dispatch-lease.js",
+    "status": "ported-base",
+    "source_sha256": "abc6fa29a67e57658e703fbf73bdb0a4fc246e5f07a33127e0cfe375abd3d458"
+  },
+  {
+    "source": "meeting-trigger/executor-receipt.js",
+    "status": "ported-base",
+    "source_sha256": "ba2f6b2838ea24d6c3135e0d642f3cc3204ccb5e26e16391b813405fcd714f2c"
+  },
+  {
+    "source": "meeting-trigger/vexa-no-join.js",
+    "status": "ported-base",
+    "source_sha256": "aac639793eb30de73aa4c4b604503095b2f96af96640937c65c3077629ef40f9"
+  },
+  {
+    "source": "meeting-trigger/vexa-finish-gate.js",
+    "status": "ported-base",
+    "source_sha256": "ffb62e4e3ec10925532a804e433bb2f30faa5dd44c9b32c2a0d3172106839bc6"
+  },
+  {
+    "source": "meeting-trigger/vexa-lifecycle-gate.js",
+    "status": "ported-base",
+    "source_sha256": "299bffaf2920ad936a919ba9df993a03a7877617a602170b488c0d18413648d5"
+  },
+  {
+    "source": "meeting-trigger/vexa-lifecycle-worker.py",
+    "status": "ported-base",
+    "source_sha256": "146507e9eef5d8e3c5b99a9e047db1142ef3872d415ec3fa85242e61d165b773"
+  },
+  {
+    "source": "meeting-trigger/vexa-postcall-worker.py",
+    "status": "ported-base",
+    "source_sha256": "12e25435442e4a50e4238bd918480a98f15f4c59de205bd8349efcd9734925ca"
+  },
+  {
+    "source": "meeting-trigger/vexa-rejoin.js",
+    "status": "ported-base",
+    "source_sha256": "eec34bb4f406ec72f8ad8738c9e42664c5d26c4e5193d13299f839dc3a36575d"
+  },
+  {
+    "source": "meeting-trigger/vexa-rejoin-worker.py",
+    "status": "ported-base",
+    "source_sha256": "aaddf7a4d885d18450a275f8f1c4380ba8d2ddc01fb11ac1896ce7ac1b9e7ad6"
+  }
+]

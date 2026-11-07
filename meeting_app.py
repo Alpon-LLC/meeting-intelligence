@@ -251,6 +251,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--config', default=str(ROOT / 'private/config.json'))
     sub = parser.add_subparsers(dest='action', required=True)
+    # Legacy rewrite retained only for OAuth/publish utilities, not scheduling.
     sub.add_parser('run')
     sub.add_parser('once')
     sub.add_parser('status')
@@ -271,6 +272,8 @@ def main():
         api = http('https://api.notion.com/v1', Path(config['notion_token_file']).read_text().strip(), 'Authorization', {'Notion-Version': '2025-09-03'})
         receipt = publish_notion(args.directory, config['notion_parent_page_id'], api, args.approve)
         print(json.dumps({'status': receipt['status'], 'url': receipt.get('url')})); return
+    if args.action in {'run', 'once'}:
+        raise SystemExit('Use npm start (original JS scheduler) or npm run once. Python scheduling is retired.')
     worker = Worker(config['meetings_dir'], config['bot_name'], config['consent_marker'])
     if args.action == 'status':
         print(json.dumps([{k:s.get(k) for k in ['directory','phase','bot_id','error']} for s in worker.states()], indent=2)); return

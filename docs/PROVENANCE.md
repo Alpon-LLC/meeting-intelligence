@@ -17,9 +17,9 @@ Public source: https://github.com/NousResearch/hermes-agent
 Candidate commit: `93dd24359dc011283a02098af84f63404f72ad15`.
 Hermes uses MIT; exact LICENSE included under licenses/hermes-LICENSE. The candidate integration invokes Hermes CLI in an isolated home; it does not bundle or depend on the old Google Meet plugin. Fresh-install compatibility remains a live release gate, not a test result.
 
-## Local-first simplification
+## Faithful port correction
 
-Production had an external object store, private speech router, completion webhook bridge, second STT pass and rich publication orchestration. This candidate deliberately uses local object storage, upstream CPU Whisper and exact-meeting-ID transcript polling instead. That avoids a public callback and private routing dependencies while keeping Calendar automation. It is a new public-oriented integration, not a claim that production was copied unchanged. This changed STT/storage/polling path requires an end-to-end rehearsal.
+The first draft unnecessarily replaced the JS scheduler and skill chain. The correction restores the original JS phase/lease/receipt machinery and full generalized skill bodies, direct Vexa join/status/stop, signed completion bridge, batch/canonical processing and prep/finish agent webhooks. Local object storage and configurable local STT replace deployment-specific services; original processing algorithms remain. See PORT.md and PORT-MANIFEST.json for source hashes and explicit exclusions.
 
 ## Publication rights
 

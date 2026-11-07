@@ -29,12 +29,14 @@ def initialize(root=ROOT):
     docker_gid = os.stat('/var/run/docker.sock').st_gid if Path('/var/run/docker.sock').exists() else 0
     env = {'COMPOSE_PROJECT_NAME': 'meeting-lab', 'DB_NAME': 'vexa', 'DB_USER': 'postgres',
            'DB_PASSWORD': token(), 'ADMIN_TOKEN': token(), 'INTERNAL_API_SECRET': token(),
+           'VEXA_SYSTEM_WEBHOOK_SECRET': token(), 'HERMES_WEBHOOK_SECRET': token(),
            'STORAGE_ACCESS_KEY': 'meetinglab', 'STORAGE_SECRET_KEY': token(), 'STT_TOKEN': token(),
            'DOCKER_GID': str(docker_gid), 'BOT_NAME': 'Meeting Lab Bot',
            'STT_MODEL': 'small', 'VEXA_BOT_IMAGE': 'meeting-lab/vexa-bot:0.12.28',
            'VEXA_MEETING_API_IMAGE': 'meeting-lab/meeting-api:0.12.28',
            'VEXA_GATEWAY_PORT': '19056', 'VEXA_ADMIN_PORT': '19058'}
-    config = {'meetings_dir': str(root / 'private/meetings'), 'bot_name': env['BOT_NAME'],
+    config = {'meetings_dir': str(root / 'private/hermes/workspace/meetings'), 'bot_name': env['BOT_NAME'],
+              'hermes_home': str(root / 'private/hermes'), 'calendar_owner_email': '',
               'consent_marker': '[record]', 'recording_consent_confirmed': False,
               'vexa_url': 'http://127.0.0.1:19056', 'vexa_key_file': str(root / 'private/vexa-key'),
               'calendar_token_file': str(root / 'private/calendar-token.json'), 'calendar_id': 'primary',
@@ -117,7 +119,8 @@ def main():
     if args.action=='install':
         run([sys.executable,'-m','venv','.venv'])
         run([str(ROOT/'.venv/bin/python'),'-m','pip','install','-r','requirements.txt'])
-        print('Python dependencies installed. Follow docs/HERMES.md for the isolated Hermes install.'); return
+        run(['npm','ci','--ignore-scripts','--no-audit','--no-fund'])
+        print('Python and original JS scheduler dependencies installed. Follow docs/HERMES.md.'); return
     if args.action=='notion':
         token=getpass.getpass('Notion integration token (hidden): ').strip()
         parent=input('Parent Notion page ID shared with integration: ').strip()

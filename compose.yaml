@@ -44,6 +44,7 @@ services:
       DEVICE: cpu
       COMPUTE_TYPE: int8
       API_TOKEN: ${STT_TOKEN:?run init}
+    ports: ['127.0.0.1:19083:8000']
     volumes: [models:/app/models]
     networks: [vexa]
     healthcheck:
@@ -113,8 +114,9 @@ services:
       S3_ACCESS_KEY: ${STORAGE_ACCESS_KEY}
       S3_SECRET_KEY: ${STORAGE_SECRET_KEY}
       MINIO_BUCKET: signal
-      VEXA_SYSTEM_WEBHOOK_URL: ''
-      VEXA_SYSTEM_WEBHOOK_SECRET: ''
+      VEXA_SYSTEM_WEBHOOK_URL: http://bridge:8091/vexa/events
+      VEXA_SYSTEM_WEBHOOK_SECRET: ${VEXA_SYSTEM_WEBHOOK_SECRET:?run init}
+      VEXA_SYSTEM_WEBHOOK_ALLOW_PRIVATE_HTTP: 'true'
     networks: [vexa]
     depends_on:
       postgres: {condition: service_healthy}
@@ -145,6 +147,31 @@ services:
       interval: 10s
       timeout: 5s
       retries: 30
+  bridge:
+    build:
+      context: ./deploy
+      dockerfile: Dockerfile.bridge
+    image: meeting-lab/completion-bridge:1
+    environment:
+      VEXA_SYSTEM_WEBHOOK_SECRET: ${VEXA_SYSTEM_WEBHOOK_SECRET:?run init}
+      DEFER_FINISH_TO_SCHEDULER: 'true'
+      HERMES_WEBHOOK_URL: http://host.docker.internal:8644/webhooks/meeting-finished
+      HERMES_WEBHOOK_SECRET: ${HERMES_WEBHOOK_SECRET:?run init}
+      HERMES_MEETINGS_DIR: /meetings
+      BRIDGE_STATE_DIR: /state
+      BRIDGE_S3_ENDPOINT: http://storage:9000
+      BRIDGE_S3_BUCKET: signal
+      BRIDGE_S3_ACCESS_KEY: ${STORAGE_ACCESS_KEY}
+      BRIDGE_S3_SECRET_KEY: ${STORAGE_SECRET_KEY}
+      BRIDGE_S3_REGION: us-east-1
+    extra_hosts: ['host.docker.internal:host-gateway']
+    volumes: ['./private/hermes/workspace/meetings:/meetings', './private/bridge-state:/state']
+    networks: [vexa]
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://localhost:8091/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
   login:
     profiles: [login]
     image: ${VEXA_BOT_IMAGE:?run init}
@@ -160,7 +187,7 @@ services:
       AWS_DEFAULT_REGION: us-east-1
       LOGIN_TIMEOUT_MS: '1800000'
     ports: ['127.0.0.1:16080:6080']
-    volumes: ['./deploy:/tools:ro', './private/auth-readiness:/auth-readiness']
+    volumes: ['./deploy:/tools:ro', './private/hermes/auth-readiness:/auth-readiness']
     networks: [vexa]
     depends_on:
       storage-init: {condition: service_completed_successfully}
