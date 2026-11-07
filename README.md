@@ -4,6 +4,12 @@ A local meeting-intelligence building-session project: your Calendar schedules a
 
 **Experimental release candidate, not live-certified.** Offline tests and patch application are exercised. Docker build/start, Google browser login, Calendar OAuth and live Notion/model calls still need a clean-machine rehearsal. Do not announce one-shot success yet.
 
+## Start here
+
+- [System architecture and finished experience](docs/ARCHITECTURE.md): how the pieces connect, entrypoints and what success looks like.
+- [Paste-ready Devin build/setup prompt](docs/DEVIN.md): goal, architecture, permitted fixes, human setup and live acceptance.
+- [What has actually been verified](docs/VERIFICATION.md): tests versus remaining live checks.
+
 ## What you get
 
 - A specific public Vexa revision plus a source patch; no duplicate Vexa codebase committed here.
