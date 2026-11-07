@@ -2,7 +2,7 @@
 
 A local meeting-intelligence building-session project: your Calendar schedules a named Google Meet bot, Vexa transcribes, Hermes drafts notes, and you review before publishing to your Notion page.
 
-**Local release candidate, not yet published or live-certified.** Offline tests and patch application are exercised. Docker build/start, Google browser login, Calendar OAuth and live Notion/model calls still need a clean-machine rehearsal. Do not announce one-shot success yet.
+**Experimental release candidate, not live-certified.** Offline tests and patch application are exercised. Docker build/start, Google browser login, Calendar OAuth and live Notion/model calls still need a clean-machine rehearsal. Do not announce one-shot success yet.
 
 ## What you get
 
@@ -108,4 +108,4 @@ Stop the scheduler with Ctrl-C; that does not claim to stop a remote bot. To end
 
 ## Release boundaries
 
-See [provenance](docs/PROVENANCE.md), [privacy](PRIVACY.md), [security](SECURITY.md), [Devin prompt](docs/DEVIN.md), and [verification](docs/VERIFICATION.md). No public repo/image or tested device matrix is asserted by this draft.
+See [provenance](docs/PROVENANCE.md), [privacy](PRIVACY.md), [security](SECURITY.md), [Devin prompt](docs/DEVIN.md), and [verification](docs/VERIFICATION.md). Repository publication does not establish working images or a tested device matrix.

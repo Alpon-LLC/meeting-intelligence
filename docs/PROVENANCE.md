@@ -23,4 +23,4 @@ Production had an external object store, private speech router, completion webho
 
 ## Publication rights
 
-New integration code/skills are prepared for an MIT release, pending the rights holder's approval. Existing Vexa patch modifications require owner approval and Apache-2.0 change attribution before public distribution. No public publication or licensing authorization is inferred from the internal build request. Do not distribute the draft until that approval and release checks are complete.
+New integration code/skills are prepared for an MIT release, pending the rights holder's approval. Existing Vexa patch modifications require owner approval and Apache-2.0 change attribution before public distribution. Repository publication was subsequently authorized. License selection and rights review remain explicit unresolved items; do not assume publication makes every component MIT.

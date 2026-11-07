@@ -19,7 +19,7 @@
 - No claim of source equivalence to an existing production bot image; this candidate rebuilds from reviewed source + patch.
 - The candidate simplifies production: exact-ID transcript polling and local Whisper/storage replace the private router, remote store, second pass and signed callback pipeline. This new path needs a controlled end-to-end rehearsal.
 - Full transitive lock/SBOM, image vulnerability/license inventory, rights-holder license approval and public release review remain required.
-- No public repository/image created, code pushed, production state changed, or real meeting joined.
+- Initial verification was local. Repository publication is separately authorized; no image publication, production change or real meeting test was performed.
 
 ## Required next rehearsal
 
