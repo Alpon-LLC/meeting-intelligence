@@ -93,6 +93,10 @@ npm test
 
 Tests use synthetic events/provider responses. A real localhost HTTP test verifies original signed prep dispatch and duplicate suppression. These are not live Google/Vexa/model/Notion passes. Docker daemon is unavailable in the authoring container, so a full isolated-device rehearsal is still required.
 
+## License
+
+Alpon-authored code and documentation are [MIT licensed](LICENSE), except for third-party-derived material and files carrying other terms. Vexa-derived code and `patches/vexa.patch` remain Apache-2.0; Hermes-derived material retains its upstream MIT notices. See [license scope](LICENSE-REVIEW.md) and [third-party notices](THIRD_PARTY_NOTICES.md). Dependencies, images, model weights and external services retain their own terms.
+
 ## Privacy and publication
 
 No real credentials, internal rosters, customer glossaries or private meeting narratives are intended in the export. Incident references excluded for confidentiality are catalogued in the manifest; key operational algorithms remain in skills/scripts. Full secret/license/dependency review remains a gate. Vexa `recording_enabled=false` does **not** mean no raw signal audio retained. Compose down preserves volumes. See PRIVACY.md and SECURITY.md. Never claim production image equivalence from an image tag alone.

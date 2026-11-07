@@ -23,4 +23,4 @@ The first draft unnecessarily replaced the JS scheduler and skill chain. The cor
 
 ## Publication rights
 
-New integration code/skills are prepared for an MIT release, pending the rights holder's approval. Existing Vexa patch modifications require owner approval and Apache-2.0 change attribution before public distribution. Repository publication was subsequently authorized. License selection and rights review remain explicit unresolved items; do not assume publication makes every component MIT.
+Alpon-authored integration code, scripts, skills and documentation are licensed under the root MIT LICENSE, except for third-party-derived material and files carrying other terms. Vexa-derived patch modifications remain Apache-2.0, including Alpon's modifications, and require preservation of upstream notices and change attribution. Hermes-derived material retains its upstream MIT notices. See LICENSE-REVIEW.md and THIRD_PARTY_NOTICES.md for scope and remaining distribution-review gates.
